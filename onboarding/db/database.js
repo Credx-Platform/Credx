@@ -371,6 +371,56 @@ function createDocument({ id, user_id, name, file_name, size, content_type, doc_
   return { id, user_id, name, file_name, doc_type, created_at: ts };
 }
 
+// ── Admin queries ─────────────────────────────────────────────────────────────
+const _getAllUsers = db.prepare(`SELECT * FROM users ORDER BY created_at DESC`);
+const _setUserRole = db.prepare(`UPDATE users SET role=@role, updated_at=@ts WHERE id=@id`);
+const _getReviewQueue = db.prepare(`
+  SELECT rq.*, l.full_name, l.email, l.phone, l.status as lead_status
+  FROM review_queue rq
+  LEFT JOIN leads l ON rq.lead_id = l.id
+  ORDER BY rq.created_at DESC
+  LIMIT 100
+`);
+const _getDisputeCountByUser = db.prepare(`SELECT COUNT(*) as cnt FROM disputes WHERE user_id=?`);
+const _statsLeads    = db.prepare(`SELECT COUNT(*) as cnt FROM leads`);
+const _statsUsers    = db.prepare(`SELECT COUNT(*) as cnt FROM users WHERE role='client'`);
+const _statsReview   = db.prepare(`SELECT COUNT(*) as cnt FROM review_queue WHERE status='awaiting_analysis'`);
+const _statsDisputes = db.prepare(`SELECT COUNT(*) as cnt FROM disputes`);
+
+function setUserRole(userId, role) {
+  _setUserRole.run({ id: userId, role, ts: now() });
+}
+function getReviewQueue() {
+  return _getReviewQueue.all();
+}
+function getAdminStats() {
+  return {
+    totalLeads:      _statsLeads.get().cnt,
+    totalClients:    _statsUsers.get().cnt,
+    awaitingReview:  _statsReview.get().cnt,
+    totalDisputes:   _statsDisputes.get().cnt,
+  };
+}
+function getAllClientsWithStatus() {
+  const users = _getAllUsers.all();
+  return users.filter(u => u.role === 'client').map(u => {
+    const lead      = _getLeadByEmail.get(u.email);
+    const analysis  = _getAnalysisByUser.get(u.id);
+    const dispCount = _getDisputeCountByUser.get(u.id)?.cnt || 0;
+    const wf = analysis?.workflow ? JSON.parse(analysis.workflow) : null;
+    const an = analysis?.analysis  ? JSON.parse(analysis.analysis) : null;
+    const { password_hash, invite_token, ...safeUser } = u;
+    return {
+      ...safeUser,
+      lead_status:     lead?.status || null,
+      lead_id:         lead?.id     || null,
+      workflow_stage:  wf?.stage    || null,
+      analysis_status: an?.status   || null,
+      dispute_count:   dispCount,
+    };
+  });
+}
+
 // ── Analysis (per-user credit analysis cache) ─────────────────────────────────
 const upsertAnalysis = db.prepare(`
   INSERT INTO user_analysis (id, user_id, analysis, dispute_strategy, workflow, updated_at)
@@ -411,5 +461,7 @@ module.exports = {
   createDocument, getDocumentsByUser,
   // analysis
   saveAnalysis, getAnalysis,
+  // admin
+  setUserRole, getReviewQueue, getAdminStats, getAllClientsWithStatus,
   ENCRYPT_ENABLED,
 };

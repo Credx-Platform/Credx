@@ -13,6 +13,7 @@ const monitoringRouter   = require('./routes/monitoring');
 const authRouter         = require('./routes/auth');
 const disputesRouter     = require('./routes/disputes');
 const progressRouter     = require('./routes/progress');
+const adminRouter        = require('./routes/admin');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -45,9 +46,16 @@ app.use('/api/leads',        leadsRouter);
 app.use('/api/contracts',    contractsRouter);
 app.use('/api/applications', applicationsRouter);
 app.use('/api/monitoring',   monitoringRouter);
+app.use('/api/admin',        adminRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
+
+// ── Named HTML routes (before SPA fallback) ───────────────────────────────────
+app.get('/portal',          (req, res) => res.sendFile(path.join(__dirname, 'public', 'portal.html')));
+app.get('/portal/activate', (req, res) => res.sendFile(path.join(__dirname, 'public', 'activate.html')));
+app.get('/login',           (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
+app.get('/admin',           (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
 // ── SPA fallback — serve index.html for any non-API route ────────────────────
 app.get('/{*path}', (req, res) => {
