@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Env files — never commit real secrets
+.env
+config/.env
+onboarding/.env
+# Keep the templates
+!.env.railway
+!onboarding/.env.example
+
+# Data / logs
+data/
+api.log
+*.log
+
+# Docker volumes
+docker/volumes/
+
+# Node
+node_modules/
+npm-debug.log
+
+# IDE
+.vscode/
+.idea/
+*.swp

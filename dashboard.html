@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CredX Skip Tracer</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; background: #1a1a2e; color: white; }
+        h1 { color: #00d9ff; text-align: center; }
+        .form-box { background: #16213e; padding: 30px; border-radius: 10px; margin-bottom: 20px; }
+        label { color: #00d9ff; display: block; margin: 15px 0 5px; }
+        input { width: 100%; padding: 10px; font-size: 16px; background: #0f3460; border: 1px solid #00d9ff; color: white; }
+        button { background: #00d9ff; color: #1a1a2e; padding: 15px; width: 100%; font-size: 18px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        #results { display: none; margin-top: 20px; }
+        .card { background: #16213e; padding: 20px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #00d9ff; }
+        .ready { color: #00ff88; font-size: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🎯 CredX Skip Tracer</h1>
+    
+    <div class="form-box">
+        <h3>New Investigation</h3>
+        <label>Subject Name</label>
+        <input type="text" id="name" placeholder="John Smith">
+        
+        <label>City</label>
+        <input type="text" id="city" placeholder="Miami">
+        
+        <label>State</label>
+        <input type="text" id="state" placeholder="FL" maxlength="2">
+        
+        <button onclick="trace()">START TRACE</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        async function trace() {
+            const btn = document.querySelector('button');
+            btn.textContent = 'Tracing...';
+            
+            const data = {
+                subject_name: document.getElementById('name').value || 'Unknown',
+                last_known_city: document.getElementById('city').value,
+                last_known_state: document.getElementById('state').value
+            };
+            
+            try {
+                // Use your server IP, not localhost
+                const resp = await fetch('http://49.51.137.199:8081/skip-trace', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const r = await resp.json();
+                
+                let html = '<h2>Results</h2>';
+                html += `<div class="card">Trace ID: ${r.trace_id}</div>`;
+                html += `<div class="card"><span class="ready">${r.service_ready ? '✅ READY' : '❌ NOT READY'}</span></div>`;
+                html += `<div class="card">Confidence: ${(r.confidence*100).toFixed(0)}%</div>`;
+                html += `<div class="card"><strong>Address:</strong><br>${r.addresses[0]?.full || 'None'}</div>`;
+                html += `<div class="card"><strong>Email:</strong><br>${r.emails[0] || 'None'}</div>`;
+                
+                document.getElementById('results').innerHTML = html;
+                document.getElementById('results').style.display = 'block';
+                
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+            
+            btn.textContent = 'START TRACE';
+        }
+    </script>
+</body>
+</html>

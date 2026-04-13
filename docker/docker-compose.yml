@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: credx-neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/credx_secure_2024
+    volumes:
+      - ../data/neo4j/data:/data
+    networks:
+      - credx-network
+
+  chromadb:
+    image: chromadb/chroma:0.4.24
+    container_name: credx-chromadb
+    ports:
+      - "8000:8000"
+    networks:
+      - credx-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: credx-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - credx-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: credx-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=credx
+      - POSTGRES_PASSWORD=credx_secure_2024
+      - POSTGRES_DB=credx_platform
+    networks:
+      - credx-network
+
+networks:
+  credx-network:
+    driver: bridge
