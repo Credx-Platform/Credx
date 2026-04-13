@@ -37,6 +37,7 @@ router.get('/clients/:userId', requireAuth, requireAdmin, (req, res) => {
   const analysis    = db.getAnalysis(user.id);
   const documents   = db.getDocumentsByUser(user.id);
 
+  const payment = db.getPaymentByUser(user.id);
   const { password_hash, invite_token, ...safeUser } = user;
 
   res.json({
@@ -46,6 +47,7 @@ router.get('/clients/:userId', requireAuth, requireAdmin, (req, res) => {
     disputes,
     analysis,
     documents,
+    payment: payment ? { status: payment.status, plan: payment.plan, current_period_end: payment.current_period_end, cancel_at_period_end: payment.cancel_at_period_end } : null,
   });
 });
 

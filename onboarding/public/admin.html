@@ -67,7 +67,8 @@
   .badge-new     { background: rgba(59,130,246,.15); color: #60a5fa; border: 1px solid rgba(59,130,246,.2); }
   .badge-review  { background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid rgba(245,158,11,.2); }
   .badge-active  { background: rgba(52,211,153,.15); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
-  .badge-done    { background: var(--surface3); color: var(--muted); border: 1px solid var(--border2); }
+  .badge-done    { background: rgba(52,211,153,.15); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+  .badge-danger  { background: rgba(248,113,113,.15); color: var(--red); border: 1px solid rgba(248,113,113,.2); }
 
   /* Search */
   .search-bar { display: flex; gap: 12px; margin-bottom: 16px; }
@@ -191,7 +192,7 @@
       <div class="card">
         <div class="card-body">
           <table>
-            <thead><tr><th>Client</th><th>Workflow Stage</th><th>Disputes</th><th>Status</th><th>Analysis</th></tr></thead>
+            <thead><tr><th>Client</th><th>Workflow Stage</th><th>Disputes</th><th>Status</th><th>Payment</th></tr></thead>
             <tbody id="client-tbody"><tr><td colspan="5" class="empty">Loading...</td></tr></tbody>
           </table>
         </div>
@@ -299,12 +300,14 @@ function renderClientTable(clients) {
     const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email;
     const stage = WORKFLOW_STAGES.find(s => s.id === c.workflow_stage)?.label || '—';
     const bCls = { new: 'badge-new', in_review: 'badge-review', monitoring_submitted: 'badge-active', completed: 'badge-done' }[c.lead_status] || 'badge-new';
+    const pmtCls = { active:'badge-done', trialing:'badge-active', past_due:'badge-danger', canceled:'badge-new', none:'badge-new' }[c.payment_status||'none'] || 'badge-new';
+    const pmtLbl = { active:'Active', trialing:'Trial', past_due:'Past Due', canceled:'Canceled', none:'—', pending:'Pending' }[c.payment_status||'none'] || c.payment_status;
     return `<tr class="clickable" onclick="openClient('${c.id}')">
       <td><div style="font-weight:600">${esc(name)}</div><div style="font-size:11px;color:var(--muted)">${esc(c.email)}</div></td>
       <td style="font-size:12px;color:var(--muted)">${esc(stage)}</td>
       <td style="text-align:center">${c.dispute_count}</td>
       <td><span class="badge ${bCls}">${cap(c.lead_status||'new')}</span></td>
-      <td style="font-size:12px;color:var(--muted)">${c.analysis_status ? cap(c.analysis_status) : '—'}</td>
+      <td><span class="badge ${pmtCls}">${pmtLbl}</span></td>
     </tr>`;
   }).join('');
 }
@@ -422,6 +425,21 @@ function renderDetailPanel({ user, lead, application, disputes, analysis, docume
         <button class="btn btn-danger" onclick="clearDisputes()">Clear Disputes</button>
       </div>
       <div class="msg-sm" id="disputes-msg"></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Billing &amp; Payment</h4>
+      ${data.payment ? (() => {
+        const p = data.payment;
+        const statusLabels = { active:'Active', trialing:'Trial Active', past_due:'Past Due', canceled:'Canceled', pending:'Pending', paused:'Paused', none:'Not Enrolled' };
+        const cls = { active:'badge-done', trialing:'badge-active', past_due:'badge-danger', canceled:'badge-new', none:'badge-new', pending:'badge-review' }[p.status||'none'] || 'badge-new';
+        const renew = p.current_period_end ? new Date(p.current_period_end).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : null;
+        return `
+          <div class="info-row"><span class="info-label">Status</span><span class="info-val"><span class="badge ${cls}">${statusLabels[p.status||'none']||p.status}</span></span></div>
+          ${p.plan ? `<div class="info-row"><span class="info-label">Plan</span><span class="info-val">${cap(p.plan)}</span></div>` : ''}
+          ${renew ? `<div class="info-row"><span class="info-label">${p.cancel_at_period_end?'Cancels':'Renews'}</span><span class="info-val">${renew}</span></div>` : ''}
+        `;
+      })() : '<div style="font-size:12px;color:var(--muted)">No payment on file — client has not enrolled.</div>'}
     </div>
 
     <div class="detail-section">

@@ -14,6 +14,7 @@ const authRouter         = require('./routes/auth');
 const disputesRouter     = require('./routes/disputes');
 const progressRouter     = require('./routes/progress');
 const adminRouter        = require('./routes/admin');
+const paymentsRouter     = require('./routes/payments');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -47,6 +48,7 @@ app.use('/api/contracts',    contractsRouter);
 app.use('/api/applications', applicationsRouter);
 app.use('/api/monitoring',   monitoringRouter);
 app.use('/api/admin',        adminRouter);
+app.use('/api/payments',     paymentsRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString() }));

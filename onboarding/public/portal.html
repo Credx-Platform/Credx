@@ -154,7 +154,22 @@
   .msg-block.error   { background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); color: var(--red); }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
   .form-field { margin-bottom: 16px; }
-  @media (max-width: 640px) { .sidebar { display: none; } .stats-row, .scores-row, .form-row { grid-template-columns: 1fr; } .main { padding: 20px 16px; } }
+  /* ── Payment banner ── */
+  .payment-banner { display: none; background: linear-gradient(135deg, rgba(245,158,11,.15), rgba(217,119,6,.1)); border-bottom: 1px solid rgba(245,158,11,.3); padding: 14px 24px; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .payment-banner.show { display: flex; }
+  .payment-banner p { font-size: 13px; color: var(--amber); }
+  .payment-banner strong { color: var(--gold); }
+  .btn-enroll { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #0a0a0a; border: none; padding: 9px 20px; border-radius: 7px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity .15s; }
+  .btn-enroll:hover { opacity: .88; }
+  .btn-enroll:disabled { opacity: .5; cursor: not-allowed; }
+  /* ── Billing card ── */
+  .billing-status { display: flex; align-items: center; gap: 10px; padding: 16px 20px; background: var(--surface3); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; }
+  .billing-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .billing-badge.active   { background: rgba(52,211,153,.15); color: var(--green); border: 1px solid rgba(52,211,153,.25); }
+  .billing-badge.trialing { background: rgba(34,211,238,.15); color: var(--cyan); border: 1px solid rgba(34,211,238,.25); }
+  .billing-badge.past_due { background: rgba(248,113,113,.15); color: var(--red); border: 1px solid rgba(248,113,113,.25); }
+  .billing-badge.none,.billing-badge.pending,.billing-badge.canceled { background: rgba(136,153,180,.12); color: var(--muted); border: 1px solid rgba(136,153,180,.2); }
+  @media (max-width: 640px) { .sidebar { display: none; } .stats-row, .scores-row, .form-row { grid-template-columns: 1fr; } .main { padding: 20px 16px; } .payment-banner { flex-direction: column; align-items: flex-start; } }
 </style>
 </head>
 <body>
@@ -168,6 +183,12 @@
     <span class="topbar-name" id="topbar-name"></span>
     <button class="btn-logout" onclick="logout()">Sign Out</button>
   </div>
+</div>
+
+<!-- Payment banner — shown when subscription not active -->
+<div class="payment-banner" id="payment-banner">
+  <p><strong>Enrollment Required</strong> — Activate your credit repair plan to unlock your full dashboard and dispute letters.</p>
+  <button class="btn-enroll" id="enroll-btn" onclick="startCheckout()">Enroll Now</button>
 </div>
 
 <div class="layout">
@@ -296,6 +317,20 @@
           <div class="msg-block" id="pw-msg"></div>
         </div>
       </div>
+      <div class="card">
+        <div class="card-header"><h2>Billing &amp; Subscription</h2><p>Manage your CredX enrollment and payment method</p></div>
+        <div class="card-body">
+          <div class="billing-status" id="billing-status-row">
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600;color:var(--text)" id="billing-label">Loading...</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px" id="billing-detail"></div>
+            </div>
+            <span class="billing-badge none" id="billing-badge">—</span>
+          </div>
+          <div id="billing-actions"></div>
+          <div class="msg-block" id="billing-msg"></div>
+        </div>
+      </div>
     </div>
 
   </main>
@@ -340,6 +375,16 @@ function logout() { localStorage.clear(); window.location.href = '/login'; }
 let userData = null, selectedFile = null;
 
 async function boot() {
+  // Handle Stripe redirect params
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('payment') === 'success') {
+    showToast('success', 'Payment received! Your enrollment is being activated.');
+    history.replaceState({}, '', '/portal');
+  } else if (params.get('payment') === 'cancelled') {
+    showToast('error', 'Payment was cancelled. You can enroll anytime from the Profile tab.');
+    history.replaceState({}, '', '/portal');
+  }
+
   try {
     const { user } = await api('GET', '/api/auth/me');
     userData = user;
@@ -350,8 +395,98 @@ async function boot() {
     document.getElementById('p-last').value  = user.last_name  || '';
     document.getElementById('p-email').value = user.email      || '';
     document.getElementById('p-phone').value = user.phone      || '';
-    await Promise.all([ loadDisputes(), loadDocs() ]);
+    await Promise.all([ loadDisputes(), loadDocs(), loadPaymentStatus() ]);
   } catch (err) { console.error(err); }
+}
+
+// ── Payment ───────────────────────────────────────────────────────────────────
+let paymentStatus = null;
+
+async function loadPaymentStatus() {
+  try {
+    const data = await api('GET', '/api/payments/status');
+    paymentStatus = data;
+    renderPaymentUI(data);
+  } catch (_) {}
+}
+
+function renderPaymentUI(data) {
+  const banner = document.getElementById('payment-banner');
+  const badge  = document.getElementById('billing-badge');
+  const label  = document.getElementById('billing-label');
+  const detail = document.getElementById('billing-detail');
+  const actions = document.getElementById('billing-actions');
+
+  const statusLabels = {
+    active:   'Active',
+    trialing: 'Trial Active',
+    past_due: 'Past Due',
+    canceled: 'Canceled',
+    pending:  'Pending',
+    paused:   'Paused',
+    none:     'Not Enrolled',
+  };
+  const s = data.status || 'none';
+  badge.className = `billing-badge ${s}`;
+  badge.textContent = statusLabels[s] || s;
+
+  if (data.active) {
+    banner.classList.remove('show');
+    label.textContent = 'CredX Monthly Credit Repair Plan';
+    if (data.current_period_end) {
+      const d = new Date(data.current_period_end);
+      detail.textContent = (data.cancel_at_period_end ? 'Cancels' : 'Renews') + ' on ' + d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+    } else {
+      detail.textContent = 'Subscription active';
+    }
+    actions.innerHTML = `<button class="btn-sm btn-outline-sm" onclick="openBillingPortal()" style="margin-top:4px">Manage Billing &amp; Cancel</button>`;
+  } else {
+    banner.classList.add('show');
+    label.textContent  = s === 'past_due' ? 'Payment past due — update your payment method' : s === 'canceled' ? 'Subscription canceled' : 'Not currently enrolled';
+    detail.textContent = s === 'past_due' ? 'Your services may be interrupted until payment is resolved.' : 'Enroll to access dispute letters and advisor services.';
+    actions.innerHTML  = `<button class="btn-enroll" onclick="startCheckout()" style="margin-top:8px;display:inline-block">Enroll Now</button>`;
+    if (s === 'past_due') {
+      actions.innerHTML = `<button class="btn-sm btn-outline-sm" onclick="openBillingPortal()" style="margin-top:8px">Update Payment Method</button>`;
+    }
+  }
+}
+
+async function startCheckout() {
+  const btns = document.querySelectorAll('.btn-enroll, #enroll-btn');
+  btns.forEach(b => { b.disabled = true; b.textContent = 'Redirecting...'; });
+  try {
+    const data = await api('POST', '/api/payments/create-checkout');
+    window.location.href = data.url;
+  } catch (err) {
+    btns.forEach(b => { b.disabled = false; b.textContent = 'Enroll Now'; });
+    const msg = document.getElementById('billing-msg');
+    if (msg) { msg.className = 'msg-block error'; msg.textContent = err.message; msg.style.display = 'block'; }
+    else { alert(err.message); }
+  }
+}
+
+async function openBillingPortal() {
+  const btn = event.target;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Opening...';
+  try {
+    const data = await api('POST', '/api/payments/billing-portal');
+    window.location.href = data.url;
+  } catch (err) {
+    btn.disabled = false; btn.textContent = orig;
+    alert(err.message);
+  }
+}
+
+function showToast(type, msg) {
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;padding:14px 20px;border-radius:8px;font-size:13px;max-width:360px;line-height:1.5;box-shadow:0 4px 20px rgba(0,0,0,.4);`;
+  el.style.background = type === 'success' ? 'rgba(52,211,153,.15)' : 'rgba(248,113,113,.15)';
+  el.style.border     = type === 'success' ? '1px solid rgba(52,211,153,.3)' : '1px solid rgba(248,113,113,.3)';
+  el.style.color      = type === 'success' ? '#34d399' : '#f87171';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 6000);
 }
 
 async function loadDisputes() {

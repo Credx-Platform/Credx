@@ -171,6 +171,23 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS payments (
+    id                       TEXT PRIMARY KEY,
+    user_id                  TEXT NOT NULL REFERENCES users(id),
+    stripe_customer_id       TEXT,
+    stripe_subscription_id   TEXT,
+    stripe_session_id        TEXT,
+    status                   TEXT DEFAULT 'none',
+    plan                     TEXT,
+    amount_cents             INTEGER,
+    current_period_end       TEXT,
+    cancel_at_period_end     INTEGER DEFAULT 0,
+    created_at               TEXT NOT NULL,
+    updated_at               TEXT NOT NULL
+  );
+`);
+
 // ── Migration: invite columns on users (safe re-run) ─────────────────────────
 const _existingUserCols = db.pragma('table_info(users)').map(c => c.name);
 if (!_existingUserCols.includes('invite_token')) {
@@ -410,6 +427,7 @@ function getAllClientsWithStatus() {
     const wf = analysis?.workflow ? JSON.parse(analysis.workflow) : null;
     const an = analysis?.analysis  ? JSON.parse(analysis.analysis) : null;
     const { password_hash, invite_token, ...safeUser } = u;
+    const pmt = _getPaymentByUser.get(u.id);
     return {
       ...safeUser,
       lead_status:     lead?.status || null,
@@ -417,6 +435,7 @@ function getAllClientsWithStatus() {
       workflow_stage:  wf?.stage    || null,
       analysis_status: an?.status   || null,
       dispute_count:   dispCount,
+      payment_status:  pmt?.status  || 'none',
     };
   });
 }
@@ -444,6 +463,59 @@ function getAnalysis(user_id) {
   };
 }
 
+// ── Payments ──────────────────────────────────────────────────────────────────
+const _getPaymentByUser   = db.prepare(`SELECT * FROM payments WHERE user_id = ? ORDER BY created_at DESC LIMIT 1`);
+const _getPaymentBySubId  = db.prepare(`SELECT * FROM payments WHERE stripe_subscription_id = ? LIMIT 1`);
+const _getPaymentByCustId = db.prepare(`SELECT * FROM payments WHERE stripe_customer_id = ? ORDER BY created_at DESC LIMIT 1`);
+const _getPaymentBySession = db.prepare(`SELECT * FROM payments WHERE stripe_session_id = ? LIMIT 1`);
+
+const _insertPayment = db.prepare(`
+  INSERT INTO payments (id, user_id, stripe_customer_id, stripe_subscription_id, stripe_session_id, status, plan, amount_cents, current_period_end, cancel_at_period_end, created_at, updated_at)
+  VALUES (@id, @user_id, @stripe_customer_id, @stripe_subscription_id, @stripe_session_id, @status, @plan, @amount_cents, @current_period_end, @cancel_at_period_end, @ts, @ts)
+`);
+const _updatePaymentStatus = db.prepare(`
+  UPDATE payments SET stripe_customer_id=@stripe_customer_id, stripe_subscription_id=@stripe_subscription_id, status=@status, plan=@plan, amount_cents=@amount_cents, current_period_end=@current_period_end, cancel_at_period_end=@cancel_at_period_end, updated_at=@ts WHERE id=@id
+`);
+
+function getPaymentByUser(user_id)    { return _getPaymentByUser.get(user_id); }
+function getPaymentBySubId(subId)     { return _getPaymentBySubId.get(subId); }
+function getPaymentByCustId(custId)   { return _getPaymentByCustId.get(custId); }
+function getPaymentBySession(sessId)  { return _getPaymentBySession.get(sessId); }
+
+function upsertPayment(fields) {
+  const existing = _getPaymentByUser.get(fields.user_id);
+  const ts = now();
+  if (existing) {
+    _updatePaymentStatus.run({
+      id:                    existing.id,
+      stripe_customer_id:    fields.stripe_customer_id    ?? existing.stripe_customer_id,
+      stripe_subscription_id:fields.stripe_subscription_id ?? existing.stripe_subscription_id,
+      status:                fields.status                ?? existing.status,
+      plan:                  fields.plan                  ?? existing.plan,
+      amount_cents:          fields.amount_cents          ?? existing.amount_cents,
+      current_period_end:    fields.current_period_end    ?? existing.current_period_end,
+      cancel_at_period_end:  fields.cancel_at_period_end  ?? existing.cancel_at_period_end ?? 0,
+      ts,
+    });
+    return _getPaymentByUser.get(fields.user_id);
+  }
+  const id = require('uuid').v4();
+  _insertPayment.run({
+    id,
+    user_id:               fields.user_id,
+    stripe_customer_id:    fields.stripe_customer_id    || null,
+    stripe_subscription_id:fields.stripe_subscription_id || null,
+    stripe_session_id:     fields.stripe_session_id     || null,
+    status:                fields.status                || 'none',
+    plan:                  fields.plan                  || null,
+    amount_cents:          fields.amount_cents          || null,
+    current_period_end:    fields.current_period_end    || null,
+    cancel_at_period_end:  fields.cancel_at_period_end  || 0,
+    ts,
+  });
+  return _getPaymentByUser.get(fields.user_id);
+}
+
 module.exports = {
   db,
   createLead,       getLead,    getLeadByEmail,
@@ -463,5 +535,7 @@ module.exports = {
   saveAnalysis, getAnalysis,
   // admin
   setUserRole, getReviewQueue, getAdminStats, getAllClientsWithStatus,
+  // payments
+  upsertPayment, getPaymentByUser, getPaymentBySubId, getPaymentByCustId, getPaymentBySession,
   ENCRYPT_ENABLED,
 };
