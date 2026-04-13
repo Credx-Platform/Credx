@@ -4,56 +4,58 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CredX — Activate Your Account</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #1a1f36;
-    --gold: #c9a84c;
-    --gold-light: #e8c870;
-    --bg: #f5f5f0;
-    --white: #ffffff;
-    --gray: #6b7280;
-    --red: #dc2626;
-    --green: #16a34a;
-    --border: #e5e7eb;
+    --bg: #101828; --surface: #151d30; --surface2: rgba(21,29,48,.92);
+    --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.12);
+    --cyan: #22d3ee; --blue: #3b82f6; --gold: #f59e0b; --gold2: #d97706;
+    --text: #f1f5f9; --text2: #cbd5e1; --muted: #8899b4;
+    --red: #f87171; --green: #34d399; --r: 12px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Georgia, 'Times New Roman', serif; background: var(--bg); color: #1f2937; min-height: 100vh; display: flex; flex-direction: column; }
-  header { background: var(--navy); padding: 20px 24px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,.3); }
-  header h1 { color: var(--gold); font-size: 26px; letter-spacing: 4px; font-weight: bold; }
-  header p  { color: #aaa; font-size: 12px; margin-top: 2px; }
-  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
-  .card { width: 100%; max-width: 440px; background: var(--white); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.08); overflow: hidden; }
-  .card-header { background: var(--navy); padding: 24px 32px; border-bottom: 3px solid var(--gold); }
-  .card-header h2 { color: var(--white); font-size: 20px; }
-  .card-header p  { color: #aaa; font-size: 13px; margin-top: 4px; line-height: 1.5; }
+  body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; background-image: radial-gradient(ellipse at 20% 50%, rgba(34,211,238,.06) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(59,130,246,.06) 0%, transparent 60%); }
+  header { background: rgba(16,24,40,.8); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: center; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-mark { width: 36px; height: 36px; background: linear-gradient(135deg, var(--cyan), var(--blue)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #fff; box-shadow: 0 0 16px rgba(34,211,238,.3); }
+  .logo-text { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 1px; }
+  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 16px; }
+  .card { width: 100%; max-width: 440px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--r); box-shadow: 0 8px 40px rgba(0,0,0,.4); overflow: hidden; backdrop-filter: blur(12px); }
+  .card-header { padding: 28px 32px 24px; border-bottom: 1px solid var(--border); text-align: center; }
+  .card-header h2 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; }
+  .card-header p { font-size: 13px; color: var(--muted); margin-top: 6px; }
   .card-body { padding: 32px; }
   .field { margin-bottom: 20px; }
-  label { display: block; font-family: Arial, sans-serif; font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
-  input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 15px; font-family: Georgia, serif; background: #fafaf8; transition: border-color .2s; color: #1f2937; }
-  input:focus { outline: none; border-color: var(--gold); background: #fffdf5; }
-  .hint { font-family: Arial, sans-serif; font-size: 12px; color: var(--gray); margin-top: 4px; }
-  .btn { width: 100%; padding: 14px; background: var(--gold); color: var(--navy); border: none; border-radius: 6px; font-size: 15px; font-weight: bold; font-family: Arial, sans-serif; cursor: pointer; transition: opacity .2s; }
-  .btn:hover:not(:disabled) { background: var(--gold-light); }
-  .btn:disabled { opacity: .6; cursor: not-allowed; }
-  .msg { padding: 12px 14px; border-radius: 0 6px 6px 0; font-family: Arial, sans-serif; font-size: 13px; margin-bottom: 20px; border-left: 4px solid; display: none; }
-  .msg.error { background: #fef2f2; border-color: var(--red); color: var(--red); }
-  .msg.success { background: #f0fdf4; border-color: var(--green); color: var(--green); }
-  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(26,31,54,.3); border-top-color: var(--navy); border-radius: 50%; animation: spin .7s linear infinite; margin-right: 8px; vertical-align: middle; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 7px; }
+  input { width: 100%; padding: 11px 14px; background: rgba(255,255,255,.05); border: 1px solid var(--border2); border-radius: 8px; font-family: 'Sora', sans-serif; font-size: 14px; color: var(--text); transition: border-color .2s, box-shadow .2s; }
+  input::placeholder { color: var(--muted); }
+  input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,.12); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+  .btn { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #0a0a0a; border: none; border-radius: 8px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .2s, transform .1s; box-shadow: 0 4px 16px rgba(245,158,11,.25); }
+  .btn:hover:not(:disabled) { opacity: .92; transform: translateY(-1px); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .msg { padding: 12px 14px; border-radius: 8px; border: 1px solid; font-size: 13px; margin-bottom: 20px; display: none; }
+  .msg.error   { background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); color: var(--red); }
+  .msg.success { background: rgba(52,211,153,.1); border-color: rgba(52,211,153,.3); color: var(--green); }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.2); border-top-color: #0a0a0a; border-radius: 50%; animation: spin .7s linear infinite; margin-right: 8px; vertical-align: middle; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  footer { background: var(--navy); color: #777; text-align: center; padding: 16px; font-family: Arial, sans-serif; font-size: 12px; }
+  footer { text-align: center; padding: 20px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); }
 </style>
 </head>
 <body>
 <header>
-  <h1>CREDX</h1>
-  <p>The Malloy Group Financial LLC</p>
+  <a class="logo" href="/">
+    <div class="logo-mark">C</div>
+    <span class="logo-text">CredX</span>
+  </a>
 </header>
-
 <main>
   <div class="card">
     <div class="card-header">
       <h2>Activate Your Account</h2>
-      <p>Create a password to access your client portal.</p>
+      <p>Create a password to access your client portal</p>
     </div>
     <div class="card-body">
       <div class="msg" id="msg"></div>
@@ -72,69 +74,43 @@
     </div>
   </div>
 </main>
-
 <footer>&copy; <span id="yr"></span> The Malloy Group Financial LLC</footer>
-
 <script>
 document.getElementById('yr').textContent = new Date().getFullYear();
-
 const params = new URLSearchParams(window.location.search);
 const token  = params.get('token');
-
 if (!token) {
   showMsg('error', 'This activation link is invalid or has expired. Please contact support.');
   document.getElementById('form-wrap').style.display = 'none';
 }
-
 async function activate() {
   const password = document.getElementById('password').value;
   const confirm  = document.getElementById('confirm').value;
   const btn      = document.getElementById('btn');
-
   hideMsg();
-
-  if (password.length < 8) {
-    return showMsg('error', 'Password must be at least 8 characters.');
-  }
-  if (password !== confirm) {
-    return showMsg('error', 'Passwords do not match.');
-  }
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Activating...';
-
+  if (password.length < 8) return showMsg('error', 'Password must be at least 8 characters.');
+  if (password !== confirm)  return showMsg('error', 'Passwords do not match.');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Activating...';
   try {
     const resp = await fetch('/api/auth/accept-invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, password }),
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Activation failed');
-
     localStorage.setItem('credx_token', data.token);
     localStorage.setItem('credx_role',  data.user.role);
     localStorage.setItem('credx_user',  JSON.stringify(data.user));
-
     showMsg('success', 'Account activated! Redirecting to your portal...');
     document.getElementById('form-wrap').style.display = 'none';
     setTimeout(() => { window.location.href = '/portal'; }, 1500);
   } catch (err) {
     showMsg('error', err.message);
-    btn.disabled = false;
-    btn.innerHTML = 'Activate &amp; Sign In';
+    btn.disabled = false; btn.innerHTML = 'Activate &amp; Sign In';
   }
 }
-
-function showMsg(type, text) {
-  const el = document.getElementById('msg');
-  el.className = 'msg ' + type;
-  el.textContent = text;
-  el.style.display = 'block';
-}
-function hideMsg() {
-  document.getElementById('msg').style.display = 'none';
-}
+function showMsg(type, text) { const el = document.getElementById('msg'); el.className = 'msg ' + type; el.textContent = text; el.style.display = 'block'; }
+function hideMsg() { document.getElementById('msg').style.display = 'none'; }
 </script>
 </body>
 </html>

@@ -89,21 +89,30 @@ function layout(content) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-  body{font-family:Georgia,serif;background:#f4f4f4;margin:0;padding:0}
-  .wrap{max-width:600px;margin:32px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-  .header{background:#1a1f36;padding:32px 40px;text-align:center}
-  .header h1{color:#c9a84c;margin:0;font-size:28px;letter-spacing:2px}
-  .header p{color:#aaa;margin:4px 0 0;font-size:13px}
-  .body{padding:36px 40px;color:#333;line-height:1.7}
-  .body h2{color:#1a1f36;border-bottom:2px solid #c9a84c;padding-bottom:8px}
-  .cta{display:inline-block;background:#c9a84c;color:#1a1f36;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px;margin:20px 0}
-  .footer{background:#f8f8f8;padding:20px 40px;text-align:center;font-size:12px;color:#999;border-top:1px solid #eee}
-  .notice{background:#fff8e1;border-left:4px solid #c9a84c;padding:12px 16px;margin:20px 0;font-size:13px}
+  body{font-family:'Helvetica Neue',Arial,sans-serif;background:#0d1526;margin:0;padding:0}
+  .wrap{max-width:600px;margin:32px auto;background:#111c30;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+  .header{background:linear-gradient(135deg,#0f1f3d,#142040);padding:32px 40px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08)}
+  .logo-mark{display:inline-block;width:44px;height:44px;background:linear-gradient(135deg,#22d3ee,#3b82f6);border-radius:10px;line-height:44px;font-size:22px;font-weight:700;color:#fff;text-align:center;margin-bottom:12px}
+  .header h1{color:#f1f5f9;margin:0;font-size:26px;letter-spacing:3px;font-family:Georgia,serif;font-weight:700}
+  .header p{color:#8899b4;margin:4px 0 0;font-size:12px;letter-spacing:.5px}
+  .body{padding:36px 40px;color:#cbd5e1;line-height:1.75;font-size:14px}
+  .body h2{color:#f1f5f9;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;margin-bottom:18px;font-family:Georgia,serif;font-size:20px}
+  .body h3{color:#e2e8f0;font-size:15px;margin-top:0;margin-bottom:6px}
+  .body p{margin:0 0 14px}
+  .body strong{color:#f1f5f9}
+  .body a{color:#22d3ee}
+  .cta{display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0a0a0a;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;margin:20px 0;letter-spacing:.3px}
+  .footer{background:#0d1526;padding:20px 40px;text-align:center;font-size:11px;color:#4a5568;border-top:1px solid rgba(255,255,255,.06)}
+  .notice{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:14px 16px;margin:20px 0;font-size:13px;color:#cbd5e1}
+  .notice strong{color:#fbbf24}
+  ol,ul{padding-left:20px}
+  ol li,ul li{margin-bottom:6px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="header">
+    <div class="logo-mark">C</div>
     <h1>CREDX</h1>
     <p>${BIZ_NAME}</p>
   </div>
