@@ -21,8 +21,7 @@
   /* Topbar */
   .topbar { background: rgba(16,24,40,.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); height: 64px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 200; }
   .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-  .logo-mark { width: 34px; height: 34px; background: linear-gradient(135deg, var(--cyan), var(--blue)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #fff; box-shadow: 0 0 14px rgba(34,211,238,.3); }
-  .logo-text { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .logo img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 12px rgba(34,211,238,.25); }
   .topbar-right { display: flex; align-items: center; gap: 14px; }
   .advisor-badge { background: rgba(245,158,11,.15); color: var(--amber); font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; letter-spacing: .5px; border: 1px solid rgba(245,158,11,.25); }
   .topbar-name { font-size: 13px; color: var(--text2); }
@@ -138,8 +137,7 @@
 
 <div class="topbar">
   <a class="logo" href="/">
-    <div class="logo-mark">C</div>
-    <span class="logo-text">CredX</span>
+    <img src="/assets/credx-logo.jpg" alt="CredX">
   </a>
   <div class="topbar-right">
     <span class="advisor-badge">ADVISOR</span>

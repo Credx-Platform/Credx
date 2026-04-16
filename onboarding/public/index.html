@@ -27,16 +27,24 @@
 
   /* ── Header ── */
   header {
-    background: var(--navy);
-    padding: 20px 24px;
-    text-align: center;
+    background: rgba(16,24,40,.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2px;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 12px rgba(0,0,0,.3);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 2px 20px rgba(0,0,0,.4);
   }
-  header h1 { color: var(--gold); font-size: 26px; letter-spacing: 4px; font-weight: bold; }
-  header p  { color: #aaa; font-size: 12px; margin-top: 2px; }
+  .header-logo { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; box-shadow: 0 2px 12px rgba(34,211,238,.25); }
+  header p  { color: #8899b4; font-size: 11px; margin-top: 2px; }
 
   /* ── Progress bar ── */
   .progress-wrap {
@@ -342,7 +350,7 @@
 <body>
 
 <header>
-  <h1>CREDX</h1>
+  <img class="header-logo" src="/assets/credx-logo.jpg" alt="CredX">
   <p>Free Credit Analysis &mdash; Secure Onboarding</p>
 </header>
 

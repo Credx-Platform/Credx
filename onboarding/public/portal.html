@@ -42,8 +42,7 @@
     position: sticky; top: 0; z-index: 100;
   }
   .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-  .logo-mark { width: 34px; height: 34px; background: linear-gradient(135deg, var(--cyan), var(--blue)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #fff; box-shadow: 0 0 14px rgba(34,211,238,.3); }
-  .logo-text { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .logo img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 12px rgba(34,211,238,.25); }
   .topbar-right { display: flex; align-items: center; gap: 14px; }
   .topbar-name { font-size: 13px; color: var(--text2); }
   .btn-logout { background: transparent; border: 1px solid var(--border2); color: var(--muted); padding: 6px 14px; border-radius: 6px; font-family: 'Sora', sans-serif; font-size: 12px; cursor: pointer; transition: color .15s, border-color .15s; }
@@ -176,8 +175,7 @@
 
 <div class="topbar">
   <a class="logo" href="/">
-    <div class="logo-mark">C</div>
-    <span class="logo-text">CredX</span>
+    <img src="/assets/credx-logo.jpg" alt="CredX">
   </a>
   <div class="topbar-right">
     <span class="topbar-name" id="topbar-name"></span>
