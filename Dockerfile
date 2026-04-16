@@ -1,21 +1,22 @@
-FROM python:3.11-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Install system deps for psycopg2 and other native packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Install native build tools for better-sqlite3
+RUN apk add --no-cache python3 make g++
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy and install dependencies first (layer cache)
+COPY onboarding/package*.json ./
+RUN npm ci --omit=dev
 
-COPY . .
+# Copy application source
+COPY onboarding/ .
 
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
+# Data directory for SQLite (mount a Railway volume here for persistence)
+RUN mkdir -p /app/data
 
-EXPOSE 8081
+ENV NODE_ENV=production
 
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8081"]
+EXPOSE 3000
+
+CMD ["node", "server.js"]
