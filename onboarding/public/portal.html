@@ -212,12 +212,7 @@
       <div class="page-title">Welcome back, <span id="dash-name">...</span></div>
       <div class="page-sub">Here's the current status of your credit repair case.</div>
 
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-num" id="stat-disputes">—</div><div class="stat-label">Active Disputes</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-docs">—</div><div class="stat-label">Documents Uploaded</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-stage">—</div><div class="stat-label">Workflow Stage</div></div>
-      </div>
-
+      <!-- Credit Scores — moved to top -->
       <div class="card">
         <div class="card-header"><h2>Credit Scores</h2><p>From your last advisor review</p></div>
         <div class="card-body">
@@ -232,6 +227,14 @@
         </div>
       </div>
 
+      <!-- Stats row — simplified, no onboarding -->
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-disputes">—</div><div class="stat-label">Active Disputes</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-docs">—</div><div class="stat-label">Documents Uploaded</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-stage">—</div><div class="stat-label">Workflow Stage</div></div>
+      </div>
+
+      <!-- Case Progress / Workflow Snapshot -->
       <div class="card">
         <div class="card-header"><h2>Case Progress</h2><p>Your credit repair roadmap</p></div>
         <div class="card-body"><div id="workflow-list"><div class="empty-state">Loading your timeline...</div></div></div>
