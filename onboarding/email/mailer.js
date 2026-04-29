@@ -21,6 +21,7 @@ const FROM      = process.env.EMAIL_FROM      || 'CredX <noreply@credx.com>';
 const SUPPORT   = process.env.SUPPORT_EMAIL   || '';
 const BIZ_NAME  = process.env.BUSINESS_NAME   || 'The Malloy Group Financial LLC';
 const APP_URL   = process.env.APP_URL         || 'http://localhost:3000';
+const ONBOARD_URL = `${APP_URL.replace(/\/$/, '')}/onboard`;
 
 function createTransport() {
   const host = process.env.SMTP_HOST;
@@ -171,7 +172,7 @@ async function sendLeadAck({ to, name, lead_id }) {
         </tr>
       </table>
 
-      <a href="${APP_URL}" class="cta">Continue Your Onboarding &rarr;</a>
+      <a href="${ONBOARD_URL}" class="cta">Continue Your Onboarding &rarr;</a>
 
       <div class="notice">
         <strong>Your 3-Day Right to Cancel:</strong> Under the Credit Repair Organizations Act, you have the right to cancel your agreement within three (3) business days of signing — at no charge. We'll remind you of this when you sign.
@@ -195,7 +196,7 @@ async function sendContractReady({ to, name, lead_id }) {
       <p>Hi ${name},</p>
       <p>Your CredX service agreement and disclosure packet is ready for your review and signature.</p>
       <p>Please click below to review the agreement and continue your onboarding:</p>
-      <a href="${APP_URL}" class="cta">Review & Sign Agreement</a>
+      <a href="${ONBOARD_URL}" class="cta">Review & Sign Agreement</a>
       <div class="notice">
         <strong>Important:</strong> No credit repair services will begin until your signed agreement is on file.
         This agreement outlines your rights, our service scope, and our no-guarantee policy.
@@ -219,7 +220,7 @@ async function sendSignedConfirmation({ to, name, signedAt, signedName, lead_id 
       </table>
       <p>Please retain this confirmation for your records. A copy of the agreement terms is available upon request.</p>
       <p>Your next step is to complete the onboarding application:</p>
-      <a href="${APP_URL}" class="cta">Complete My Application</a>
+      <a href="${ONBOARD_URL}" class="cta">Complete My Application</a>
       <div class="notice">
         <strong>Your 3-Day Right to Cancel:</strong> Under the Credit Repair Organizations Act, you have the right to cancel this agreement within three (3) business days without any charge. To cancel, contact us in writing at <a href="mailto:${SUPPORT}">${SUPPORT || 'support@credx.com'}</a>.
       </div>

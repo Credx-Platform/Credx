@@ -12,7 +12,7 @@ function handleValidation(req, res, next) {
 const leadRules = [
   body('full_name').trim().notEmpty().withMessage('Full name is required').isLength({ max: 120 }),
   body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
-  body('phone').optional({ checkFalsy: true }).trim().isMobilePhone('any', { strictMode: false }).withMessage('Invalid phone number'),
+  body('phone').optional({ checkFalsy: true }).trim().matches(/^[\d\s\-\(\)\+\.]+$/).withMessage('Invalid phone number format'),
 ];
 
 const contractRules = [
@@ -39,8 +39,8 @@ const applicationRules = [
 const monitoringRules = [
   body('lead_id').trim().notEmpty().withMessage('lead_id is required'),
   body('provider').trim().notEmpty().withMessage('Provider is required'),
-  body('username').trim().notEmpty().withMessage('Username/email is required'),
-  body('password').trim().notEmpty().withMessage('Password is required'),
+  body('username').optional({ checkFalsy: true }).trim(),
+  body('password').optional({ checkFalsy: true }).trim(),
   body('security_notes').optional({ checkFalsy: true }).trim().isLength({ max: 500 }),
 ];
 

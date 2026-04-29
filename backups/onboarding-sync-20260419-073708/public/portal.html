@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CredX — My Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #101828;
+    --surface:  #151d30;
+    --surface2: rgba(21,29,48,.92);
+    --surface3: rgba(255,255,255,.04);
+    --border:   rgba(255,255,255,.08);
+    --border2:  rgba(255,255,255,.13);
+    --cyan:     #22d3ee;
+    --blue:     #3b82f6;
+    --gold:     #f59e0b;
+    --gold2:    #d97706;
+    --text:     #f1f5f9;
+    --text2:    #cbd5e1;
+    --muted:    #8899b4;
+    --red:      #f87171;
+    --green:    #34d399;
+    --amber:    #fbbf24;
+    --r:        12px;
+    --sidebar-w: 220px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── Topbar ── */
+  .topbar {
+    background: rgba(16,24,40,.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    height: 64px; padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 12px rgba(34,211,238,.25); }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .topbar-name { font-size: 13px; color: var(--text2); }
+  .btn-logout { background: transparent; border: 1px solid var(--border2); color: var(--muted); padding: 6px 14px; border-radius: 6px; font-family: 'Sora', sans-serif; font-size: 12px; cursor: pointer; transition: color .15s, border-color .15s; }
+  .btn-logout:hover { color: var(--cyan); border-color: var(--cyan); }
+
+  /* ── Layout ── */
+  .layout { display: flex; flex: 1; }
+  .sidebar { width: var(--sidebar-w); background: rgba(21,29,48,.6); border-right: 1px solid var(--border); min-height: calc(100vh - 64px); padding: 20px 0; flex-shrink: 0; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 11px 20px; color: var(--muted); font-size: 13px; cursor: pointer; border-left: 2px solid transparent; transition: all .15s; user-select: none; }
+  .nav-item:hover { color: var(--text2); background: var(--surface3); }
+  .nav-item.active { color: var(--cyan); border-left-color: var(--cyan); background: rgba(34,211,238,.06); }
+  .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+  .main { flex: 1; padding: 32px 28px; max-width: 960px; }
+
+  /* ── Cards ── */
+  .card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); box-shadow: 0 4px 24px rgba(0,0,0,.25); margin-bottom: 20px; overflow: hidden; }
+  .card-header { padding: 18px 24px; border-bottom: 1px solid var(--border); }
+  .card-header h2 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; color: var(--text); }
+  .card-header p  { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .card-body { padding: 24px; }
+
+  /* ── Stats ── */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+  .stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 24px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,.2); }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* ── Workflow ── */
+  .wf-item { display: flex; align-items: flex-start; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+  .wf-item:last-child { border-bottom: none; }
+  .wf-dot { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; margin-top: 1px; }
+  .wf-dot.done    { background: rgba(52,211,153,.2); color: var(--green); border: 1px solid rgba(52,211,153,.4); }
+  .wf-dot.current { background: rgba(245,158,11,.2); color: var(--amber); border: 1px solid rgba(245,158,11,.4); }
+  .wf-dot.future  { background: var(--surface3); color: var(--muted); border: 1px solid var(--border); }
+  .wf-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .wf-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+  /* ── Scores ── */
+  .scores-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .score-box { text-align: center; padding: 20px 12px; background: var(--surface3); border: 1px solid var(--border); border-radius: 10px; }
+  .score-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; }
+  .score-num.good { color: var(--green); }
+  .score-num.fair { color: var(--amber); }
+  .score-num.poor { color: var(--red); }
+  .score-num.na   { color: var(--muted); font-size: 24px; }
+  .score-bureau { font-size: 11px; color: var(--muted); margin-top: 5px; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* ── Disputes ── */
+  .dispute-list { display: flex; flex-direction: column; gap: 10px; }
+  .dispute-item { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .dispute-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; cursor: pointer; background: var(--surface3); transition: background .15s; }
+  .dispute-row:hover { background: rgba(255,255,255,.06); }
+  .dispute-meta { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+  .priority-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .priority-dot.high   { background: var(--red); box-shadow: 0 0 6px rgba(248,113,113,.5); }
+  .priority-dot.medium { background: var(--amber); box-shadow: 0 0 6px rgba(251,191,36,.5); }
+  .priority-dot.low    { background: var(--green); box-shadow: 0 0 6px rgba(52,211,153,.5); }
+  .dispute-title  { font-size: 13px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dispute-bureau { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-drafted  { background: rgba(59,130,246,.15); color: #60a5fa; border: 1px solid rgba(59,130,246,.2); }
+  .badge-sent     { background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid rgba(245,158,11,.2); }
+  .badge-resolved { background: rgba(52,211,153,.15); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+  .chevron { color: var(--muted); font-size: 11px; margin-left: 10px; flex-shrink: 0; transition: transform .2s; }
+  .chevron.open { transform: rotate(90deg); }
+  .dispute-letter { display: none; padding: 20px 18px; background: rgba(0,0,0,.2); border-top: 1px solid var(--border); }
+  .dispute-letter pre { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.7; color: var(--text2); white-space: pre-wrap; word-break: break-word; }
+  .letter-actions { margin-top: 14px; display: flex; gap: 10px; }
+  .btn-sm { padding: 8px 16px; border-radius: 6px; font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-cyan { background: linear-gradient(135deg, var(--cyan), var(--blue)); color: #fff; }
+  .btn-outline-sm { background: transparent; border: 1px solid var(--border2); color: var(--muted); }
+  .btn-outline-sm:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  /* ── Documents ── */
+  .upload-zone { border: 2px dashed var(--border2); border-radius: 10px; padding: 32px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; }
+  .upload-zone:hover { border-color: var(--cyan); background: rgba(34,211,238,.04); }
+  .upload-zone p { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .upload-zone .icon { font-size: 32px; }
+  .doc-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .doc-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; }
+  .doc-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .doc-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .doc-badge { margin-left: auto; }
+  select { width: 100%; padding: 10px 12px; background: rgba(255,255,255,.05); border: 1px solid var(--border2); border-radius: 8px; font-family: 'Sora', sans-serif; font-size: 13px; color: var(--text); }
+  select:focus { outline: none; border-color: var(--cyan); }
+  select option { background: #1a2340; }
+
+  /* ── Misc ── */
+  .notice { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2); border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.6; color: var(--text2); }
+  .notice strong { color: var(--amber); }
+  .empty-state { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .findings-list { display: flex; flex-direction: column; gap: 8px; }
+  .finding-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; background: rgba(245,158,11,.05); border-left: 2px solid var(--gold); border-radius: 0 8px 8px 0; font-size: 13px; color: var(--text2); }
+  .finding-bullet { color: var(--gold); flex-shrink: 0; margin-top: 1px; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+  input[type=text], input[type=email], input[type=tel], input[type=password] { width: 100%; padding: 10px 12px; background: rgba(255,255,255,.05); border: 1px solid var(--border2); border-radius: 8px; font-family: 'Sora', sans-serif; font-size: 14px; color: var(--text); }
+  input::placeholder { color: var(--muted); }
+  input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,.1); }
+  input[readonly] { opacity: .5; cursor: not-allowed; }
+  .btn-primary-full { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #0a0a0a; border: none; border-radius: 8px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; transition: opacity .2s; }
+  .btn-primary-full:hover { opacity: .9; }
+  .msg-block { padding: 10px 14px; border-radius: 8px; border: 1px solid; font-size: 13px; display: none; margin-top: 12px; }
+  .msg-block.success { background: rgba(52,211,153,.1); border-color: rgba(52,211,153,.3); color: var(--green); }
+  .msg-block.error   { background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); color: var(--red); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .form-field { margin-bottom: 16px; }
+  /* ── Payment banner ── */
+  .payment-banner { display: none; background: linear-gradient(135deg, rgba(245,158,11,.15), rgba(217,119,6,.1)); border-bottom: 1px solid rgba(245,158,11,.3); padding: 14px 24px; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .payment-banner.show { display: flex; }
+  .payment-banner p { font-size: 13px; color: var(--amber); }
+  .payment-banner strong { color: var(--gold); }
+  .btn-enroll { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #0a0a0a; border: none; padding: 9px 20px; border-radius: 7px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity .15s; }
+  .btn-enroll:hover { opacity: .88; }
+  .btn-enroll:disabled { opacity: .5; cursor: not-allowed; }
+  /* ── Billing card ── */
+  .billing-status { display: flex; align-items: center; gap: 10px; padding: 16px 20px; background: var(--surface3); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; }
+  .billing-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .billing-badge.active   { background: rgba(52,211,153,.15); color: var(--green); border: 1px solid rgba(52,211,153,.25); }
+  .billing-badge.trialing { background: rgba(34,211,238,.15); color: var(--cyan); border: 1px solid rgba(34,211,238,.25); }
+  .billing-badge.past_due { background: rgba(248,113,113,.15); color: var(--red); border: 1px solid rgba(248,113,113,.25); }
+  .billing-badge.none,.billing-badge.pending,.billing-badge.canceled { background: rgba(136,153,180,.12); color: var(--muted); border: 1px solid rgba(136,153,180,.2); }
+  @media (max-width: 640px) { .sidebar { display: none; } .stats-row, .scores-row, .form-row { grid-template-columns: 1fr; } .main { padding: 20px 16px; } .payment-banner { flex-direction: column; align-items: flex-start; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="logo" href="/">
+    <img src="/assets/credx-logo.jpg" alt="CredX">
+  </a>
+  <div class="topbar-right">
+    <span class="topbar-name" id="topbar-name"></span>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<!-- Payment banner — shown when subscription not active -->
+<div class="payment-banner" id="payment-banner">
+  <p><strong>Enrollment Required</strong> — Activate your credit repair plan to unlock your full dashboard and dispute letters.</p>
+  <button class="btn-enroll" id="enroll-btn" onclick="startCheckout()">Enroll Now</button>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+      <span class="nav-icon">⬛</span> Dashboard
+    </div>
+    <div class="nav-item" data-page="disputes" onclick="showPage('disputes')">
+      <span class="nav-icon">✉</span> My Disputes
+    </div>
+    <div class="nav-item" data-page="documents" onclick="showPage('documents')">
+      <span class="nav-icon">📄</span> Documents
+    </div>
+    <div class="nav-item" data-page="profile" onclick="showPage('profile')">
+      <span class="nav-icon">👤</span> Profile
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-title">Welcome back, <span id="dash-name">...</span></div>
+      <div class="page-sub">Here's the current status of your credit repair case.</div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-disputes">—</div><div class="stat-label">Active Disputes</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-docs">—</div><div class="stat-label">Documents Uploaded</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-stage">—</div><div class="stat-label">Workflow Stage</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>Credit Scores</h2><p>From your last advisor review</p></div>
+        <div class="card-body">
+          <div class="scores-row">
+            <div class="score-box"><div class="score-num na" id="score-equifax">—</div><div class="score-bureau">Equifax</div></div>
+            <div class="score-box"><div class="score-num na" id="score-experian">—</div><div class="score-bureau">Experian</div></div>
+            <div class="score-box"><div class="score-num na" id="score-transunion">—</div><div class="score-bureau">TransUnion</div></div>
+          </div>
+          <div id="scores-pending" class="notice" style="margin-top:16px;display:none;">
+            Your advisor is reviewing your credit report. Scores will appear here once the review is complete.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>Case Progress</h2><p>Your credit repair roadmap</p></div>
+        <div class="card-body"><div id="workflow-list"><div class="empty-state">Loading your timeline...</div></div></div>
+      </div>
+
+      <div class="card" id="findings-card" style="display:none;">
+        <div class="card-header"><h2>Report Findings</h2><p>Items identified for dispute by your advisor</p></div>
+        <div class="card-body"><div class="findings-list" id="findings-list"></div></div>
+      </div>
+    </div>
+
+    <!-- Disputes -->
+    <div class="page" id="page-disputes">
+      <div class="page-title">My Dispute Letters</div>
+      <div class="page-sub">Letters prepared on your behalf for each credit bureau.</div>
+      <div class="notice" style="margin-bottom:20px;">
+        <strong>What to do:</strong> Print each letter, sign it, and mail it certified with return receipt. Include copies of your ID, Social Security card, and proof of address.
+      </div>
+      <div class="dispute-list" id="dispute-list"><div class="empty-state">Loading disputes...</div></div>
+    </div>
+
+    <!-- Documents -->
+    <div class="page" id="page-documents">
+      <div class="page-title">My Documents</div>
+      <div class="page-sub">Upload your credit report and bureau responses for advisor review.</div>
+      <div class="card">
+        <div class="card-header"><h2>Upload a Document</h2></div>
+        <div class="card-body">
+          <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+            <div class="icon">📄</div>
+            <strong style="font-size:14px;">Click to upload</strong>
+            <p>Credit report, bureau response, ID, or other document</p>
+          </div>
+          <input type="file" id="file-input" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="handleFileSelect(this)">
+          <div id="upload-form" style="display:none;margin-top:16px;">
+            <div class="form-field">
+              <label>Document Type</label>
+              <select id="doc-type">
+                <option value="credit_report">Credit Report</option>
+                <option value="bureau_response">Bureau Response</option>
+                <option value="id_document">Government ID</option>
+                <option value="ssn_card">Social Security Card</option>
+                <option value="proof_of_address">Proof of Address</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <button class="btn-sm btn-cyan" id="upload-btn" onclick="uploadDoc()">Upload Document</button>
+          </div>
+          <div class="msg-block" id="upload-msg"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>Uploaded Documents</h2></div>
+        <div class="card-body"><div class="doc-list" id="doc-list"><div class="empty-state">No documents yet.</div></div></div>
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div class="page" id="page-profile">
+      <div class="page-title">My Profile</div>
+      <div class="page-sub">Your account information</div>
+      <div class="card">
+        <div class="card-header"><h2>Account Details</h2></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div><label>First Name</label><input type="text" id="p-first" readonly></div>
+            <div><label>Last Name</label><input type="text" id="p-last" readonly></div>
+          </div>
+          <div class="form-field"><label>Email</label><input type="email" id="p-email" readonly></div>
+          <div class="form-field"><label>Phone</label><input type="tel" id="p-phone" readonly></div>
+          <div class="notice">To update your contact info, email <strong>contact@credxme.com</strong>.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>Change Password</h2></div>
+        <div class="card-body">
+          <div class="form-field"><label>Current Password</label><input type="password" id="pw-current" placeholder="Current password"></div>
+          <div class="form-field"><label>New Password</label><input type="password" id="pw-new" placeholder="At least 8 characters"></div>
+          <div class="form-field"><label>Confirm New Password</label><input type="password" id="pw-confirm" placeholder="Repeat new password"></div>
+          <button class="btn-primary-full" onclick="changePassword()">Update Password</button>
+          <div class="msg-block" id="pw-msg"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>Billing &amp; Subscription</h2><p>Manage your CredX enrollment and payment method</p></div>
+        <div class="card-body">
+          <div class="billing-status" id="billing-status-row">
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600;color:var(--text)" id="billing-label">Loading...</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px" id="billing-detail"></div>
+            </div>
+            <span class="billing-badge none" id="billing-badge">—</span>
+          </div>
+          <div id="billing-actions"></div>
+          <div class="msg-block" id="billing-msg"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const token = localStorage.getItem('credx_token');
+if (!token) window.location.href = '/login';
+
+const WORKFLOW_STAGES = [
+  { id: 'credit_report_received',   label: 'Credit Report Received',       desc: 'Report uploaded. Awaiting advisor review.' },
+  { id: 'advisor_review_pending',   label: 'Advisor Review In Progress',   desc: 'Advisor is reviewing the report and identifying disputable items.' },
+  { id: 'round_one_disputes_ready', label: 'Round 1 Disputes Ready',       desc: 'Dispute letters drafted and ready to mail.' },
+  { id: 'mail_round_one_packets',   label: 'Round 1 Packets Mailed',       desc: 'Letters sent to all three bureaus.' },
+  { id: 'wait_for_responses',       label: 'Waiting for Bureau Responses', desc: 'Bureaus have 30 days to respond under FCRA § 611.' },
+  { id: 'round_two_follow_up',      label: 'Round 2 Follow-Up',            desc: 'MOV requests or escalation letters prepared.' },
+  { id: 'cfpb_escalation',          label: 'CFPB Escalation (if needed)',  desc: 'CFPB complaint filed for non-compliant responses.' },
+  { id: 'goodwill_campaign',        label: 'Goodwill Campaign',            desc: 'Creditor letters for late payment removal.' },
+  { id: 'completed',                label: 'Case Completed',               desc: 'All rounds complete. Final score review in progress.' },
+];
+
+async function api(method, path, body) {
+  const r = await fetch(path, {
+    method,
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const d = await r.json();
+  if (r.status === 401) { localStorage.clear(); window.location.href = '/login'; }
+  if (!r.ok) throw new Error(d.error || 'Request failed');
+  return d;
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`).classList.add('active');
+}
+function logout() { localStorage.clear(); window.location.href = '/login'; }
+
+let userData = null, selectedFile = null;
+
+async function boot() {
+  // Handle Stripe redirect params
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('payment') === 'success') {
+    showToast('success', 'Payment received! Your enrollment is being activated.');
+    history.replaceState({}, '', '/portal');
+  } else if (params.get('payment') === 'cancelled') {
+    showToast('error', 'Payment was cancelled. You can enroll anytime from the Profile tab.');
+    history.replaceState({}, '', '/portal');
+  }
+
+  try {
+    const { user } = await api('GET', '/api/auth/me');
+    userData = user;
+    const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email;
+    document.getElementById('topbar-name').textContent = name;
+    document.getElementById('dash-name').textContent   = user.first_name || name;
+    document.getElementById('p-first').value = user.first_name || '';
+    document.getElementById('p-last').value  = user.last_name  || '';
+    document.getElementById('p-email').value = user.email      || '';
+    document.getElementById('p-phone').value = user.phone      || '';
+    await Promise.all([ loadDisputes(), loadDocs(), loadPaymentStatus() ]);
+  } catch (err) { console.error(err); }
+}
+
+// ── Payment ───────────────────────────────────────────────────────────────────
+let paymentStatus = null;
+
+async function loadPaymentStatus() {
+  try {
+    const data = await api('GET', '/api/payments/status');
+    paymentStatus = data;
+    renderPaymentUI(data);
+  } catch (_) {}
+}
+
+function renderPaymentUI(data) {
+  const banner = document.getElementById('payment-banner');
+  const badge  = document.getElementById('billing-badge');
+  const label  = document.getElementById('billing-label');
+  const detail = document.getElementById('billing-detail');
+  const actions = document.getElementById('billing-actions');
+
+  const statusLabels = {
+    active:   'Active',
+    trialing: 'Trial Active',
+    past_due: 'Past Due',
+    canceled: 'Canceled',
+    pending:  'Pending',
+    paused:   'Paused',
+    none:     'Not Enrolled',
+  };
+  const s = data.status || 'none';
+  badge.className = `billing-badge ${s}`;
+  badge.textContent = statusLabels[s] || s;
+
+  if (data.active) {
+    banner.classList.remove('show');
+    label.textContent = 'CredX Monthly Credit Repair Plan';
+    if (data.current_period_end) {
+      const d = new Date(data.current_period_end);
+      detail.textContent = (data.cancel_at_period_end ? 'Cancels' : 'Renews') + ' on ' + d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+    } else {
+      detail.textContent = 'Subscription active';
+    }
+    actions.innerHTML = `<button class="btn-sm btn-outline-sm" onclick="openBillingPortal()" style="margin-top:4px">Manage Billing &amp; Cancel</button>`;
+  } else {
+    banner.classList.add('show');
+    label.textContent  = s === 'past_due' ? 'Payment past due — update your payment method' : s === 'canceled' ? 'Subscription canceled' : 'Not currently enrolled';
+    detail.textContent = s === 'past_due' ? 'Your services may be interrupted until payment is resolved.' : 'Enroll to access dispute letters and advisor services.';
+    actions.innerHTML  = `<button class="btn-enroll" onclick="startCheckout()" style="margin-top:8px;display:inline-block">Enroll Now</button>`;
+    if (s === 'past_due') {
+      actions.innerHTML = `<button class="btn-sm btn-outline-sm" onclick="openBillingPortal()" style="margin-top:8px">Update Payment Method</button>`;
+    }
+  }
+}
+
+async function startCheckout() {
+  const btns = document.querySelectorAll('.btn-enroll, #enroll-btn');
+  btns.forEach(b => { b.disabled = true; b.textContent = 'Redirecting...'; });
+  try {
+    const data = await api('POST', '/api/payments/create-checkout');
+    window.location.href = data.url;
+  } catch (err) {
+    btns.forEach(b => { b.disabled = false; b.textContent = 'Enroll Now'; });
+    const msg = document.getElementById('billing-msg');
+    if (msg) { msg.className = 'msg-block error'; msg.textContent = err.message; msg.style.display = 'block'; }
+    else { alert(err.message); }
+  }
+}
+
+async function openBillingPortal() {
+  const btn = event.target;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Opening...';
+  try {
+    const data = await api('POST', '/api/payments/billing-portal');
+    window.location.href = data.url;
+  } catch (err) {
+    btn.disabled = false; btn.textContent = orig;
+    alert(err.message);
+  }
+}
+
+function showToast(type, msg) {
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;padding:14px 20px;border-radius:8px;font-size:13px;max-width:360px;line-height:1.5;box-shadow:0 4px 20px rgba(0,0,0,.4);`;
+  el.style.background = type === 'success' ? 'rgba(52,211,153,.15)' : 'rgba(248,113,113,.15)';
+  el.style.border     = type === 'success' ? '1px solid rgba(52,211,153,.3)' : '1px solid rgba(248,113,113,.3)';
+  el.style.color      = type === 'success' ? '#34d399' : '#f87171';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 6000);
+}
+
+async function loadDisputes() {
+  try {
+    const data = await api('GET', '/api/disputes');
+    renderDisputes(data.disputes || []);
+    document.getElementById('stat-disputes').textContent = (data.disputes || []).length;
+    renderAnalysis(data.analysis, data.workflow);
+  } catch (_) {}
+}
+
+async function loadDocs() {
+  try {
+    const data = await api('GET', '/api/progress/docs');
+    renderDocs(data.docs || []);
+    document.getElementById('stat-docs').textContent = (data.docs || []).length;
+  } catch (_) {}
+}
+
+function renderAnalysis(analysis, workflow) {
+  const scores = analysis?.scores || {};
+  renderScore('score-equifax',    scores.equifax);
+  renderScore('score-experian',   scores.experian);
+  renderScore('score-transunion', scores.transunion);
+  if (!scores.equifax && !scores.experian && !scores.transunion) {
+    document.getElementById('scores-pending').style.display = 'block';
+  }
+  renderWorkflow(workflow);
+  if (analysis?.findings?.length) {
+    document.getElementById('findings-card').style.display = 'block';
+    document.getElementById('findings-list').innerHTML = analysis.findings.map(f =>
+      `<div class="finding-item"><span class="finding-bullet">▶</span>${esc(f)}</div>`
+    ).join('');
+  }
+}
+
+function renderScore(id, score) {
+  const el = document.getElementById(id);
+  if (!score) { el.className = 'score-num na'; el.textContent = '—'; return; }
+  el.className = 'score-num ' + (score >= 740 ? 'good' : score >= 580 ? 'fair' : 'poor');
+  el.textContent = score;
+}
+
+function renderWorkflow(workflow) {
+  const currentStage = workflow?.stage || null;
+  const idx = WORKFLOW_STAGES.findIndex(s => s.id === currentStage);
+  document.getElementById('stat-stage').textContent = idx >= 0 ? idx + 1 : '—';
+  document.getElementById('workflow-list').innerHTML = WORKFLOW_STAGES.map((s, i) => {
+    const cls  = i < idx ? 'done' : i === idx ? 'current' : 'future';
+    const icon = i < idx ? '✓' : i === idx ? '●' : (i + 1);
+    return `<div class="wf-item">
+      <div class="wf-dot ${cls}">${icon}</div>
+      <div><div class="wf-label">${esc(s.label)}</div><div class="wf-desc">${esc(s.desc)}</div></div>
+    </div>`;
+  }).join('') || '<div class="empty-state">Upload your credit report to begin.</div>';
+}
+
+function renderDisputes(disputes) {
+  const el = document.getElementById('dispute-list');
+  if (!disputes.length) {
+    el.innerHTML = '<div class="empty-state">No dispute letters yet. Your advisor will prepare these after reviewing your credit report.</div>'; return;
+  }
+  el.innerHTML = disputes.map((d, i) => `
+    <div class="dispute-item">
+      <div class="dispute-row" onclick="toggleLetter(${i})">
+        <div class="dispute-meta">
+          <div class="priority-dot ${d.priority||'medium'}"></div>
+          <div>
+            <div class="dispute-title">${esc(d.title||d.account_name)}</div>
+            <div class="dispute-bureau">${esc(d.bureau)}${d.accountNumber?' · #'+d.accountNumber:''}</div>
+          </div>
+        </div>
+        <span class="badge badge-${d.status||'drafted'}">${cap(d.status||'drafted')}</span>
+        <span class="chevron" id="chev-${i}">▶</span>
+      </div>
+      <div class="dispute-letter" id="letter-${i}">
+        <pre>${esc(d.generatedLetter||'(Letter not generated yet)')}</pre>
+        <div class="letter-actions">
+          <button class="btn-sm btn-cyan" onclick="printLetter(${i})">Print Letter</button>
+          <button class="btn-sm btn-outline-sm" onclick="copyLetter(${i})">Copy Text</button>
+        </div>
+      </div>
+    </div>`).join('');
+  window._disputes = disputes;
+}
+
+function renderDocs(docs) {
+  const el = document.getElementById('doc-list');
+  if (!docs.length) { el.innerHTML = '<div class="empty-state">No documents uploaded yet.</div>'; return; }
+  const labels = { credit_report:'Credit Report', bureau_response:'Bureau Response', id_document:'Gov. ID', ssn_card:'SSN Card', proof_of_address:'Proof of Address', other:'Document' };
+  el.innerHTML = docs.map(d => `
+    <div class="doc-item">
+      <span style="font-size:20px">📄</span>
+      <div><div class="doc-name">${esc(d.name)}</div><div class="doc-meta">${labels[d.doc_type]||'Document'} · ${new Date(d.created_at).toLocaleDateString()}</div></div>
+      <span class="badge badge-drafted doc-badge">${labels[d.doc_type]||'Other'}</span>
+    </div>`).join('');
+}
+
+function toggleLetter(i) {
+  const l = document.getElementById('letter-'+i), c = document.getElementById('chev-'+i);
+  const open = l.style.display === 'block';
+  l.style.display = open ? 'none' : 'block';
+  c.classList.toggle('open', !open);
+}
+function printLetter(i) {
+  const d = window._disputes[i];
+  const w = window.open('', '_blank');
+  w.document.write(`<html><head><title>Dispute Letter</title><style>body{font-family:'Courier New',monospace;font-size:13px;line-height:1.8;padding:40px;white-space:pre-wrap;}</style></head><body>${esc(d.generatedLetter||'')}</body></html>`);
+  w.document.close(); w.print();
+}
+function copyLetter(i) {
+  navigator.clipboard.writeText(window._disputes[i].generatedLetter||'').then(()=>alert('Letter copied to clipboard.'));
+}
+function handleFileSelect(input) {
+  const file = input.files[0]; if (!file) return;
+  selectedFile = file;
+  document.getElementById('upload-form').style.display = 'block';
+  document.querySelector('.upload-zone strong').textContent = file.name;
+}
+async function uploadDoc() {
+  if (!selectedFile) return;
+  const btn = document.getElementById('upload-btn'), msgEl = document.getElementById('upload-msg');
+  btn.disabled = true; btn.textContent = 'Uploading...'; msgEl.style.display = 'none';
+  try {
+    await api('POST', '/api/progress/docs', { name: selectedFile.name, fileName: selectedFile.name, size: selectedFile.size, type: document.getElementById('doc-type').value });
+    msgEl.className = 'msg-block success'; msgEl.textContent = 'Document recorded. Your advisor has been notified.'; msgEl.style.display = 'block';
+    document.getElementById('upload-form').style.display = 'none';
+    document.querySelector('.upload-zone strong').textContent = 'Click to upload';
+    selectedFile = null; document.getElementById('file-input').value = '';
+    await loadDocs(); await loadDisputes();
+  } catch (err) { msgEl.className = 'msg-block error'; msgEl.textContent = err.message; msgEl.style.display = 'block'; }
+  finally { btn.disabled = false; btn.textContent = 'Upload Document'; }
+}
+async function changePassword() {
+  const current = document.getElementById('pw-current').value;
+  const newPw   = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  const msgEl   = document.getElementById('pw-msg');
+  msgEl.style.display = 'none';
+  if (!current || !newPw || !confirm) { msgEl.className='msg-block error'; msgEl.textContent='All fields required.'; msgEl.style.display='block'; return; }
+  if (newPw.length < 8) { msgEl.className='msg-block error'; msgEl.textContent='New password must be at least 8 characters.'; msgEl.style.display='block'; return; }
+  if (newPw !== confirm) { msgEl.className='msg-block error'; msgEl.textContent='Passwords do not match.'; msgEl.style.display='block'; return; }
+  try {
+    const r = await fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:userData.email,password:current}) });
+    if (!r.ok) throw new Error('Current password is incorrect.');
+    msgEl.className='msg-block success'; msgEl.textContent='Verified. Contact support at contact@credxme.com to complete your password change.'; msgEl.style.display='block';
+  } catch(err) { msgEl.className='msg-block error'; msgEl.textContent=err.message; msgEl.style.display='block'; }
+}
+function esc(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function cap(s) { return String(s).charAt(0).toUpperCase()+String(s).slice(1).replace(/_/g,' '); }
+
+boot();
+</script>
+</body>
+</html>

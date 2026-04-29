@@ -9,8 +9,6 @@ const { contractRules, handleValidation } = require('../middleware/validate');
 
 const BIZ_NAME  = process.env.BUSINESS_NAME || 'The Malloy Group Financial LLC';
 const SUPPORT   = process.env.SUPPORT_EMAIL  || 'support@credx.com';
-const BIZ_ADDRESS = process.env.BUSINESS_ADDRESS || 'New York, NY';
-const GOVERNING_STATE = process.env.GOVERNING_STATE || 'New York';
 
 // GET /api/contracts/text — return the full plain-text service agreement (for display)
 router.get('/text', (req, res) => {
@@ -138,7 +136,7 @@ The Company's total liability to you for any claim arising out of this Agreement
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SECTION 7 — GOVERNING LAW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-This Agreement shall be governed by the laws of the State of ${GOVERNING_STATE}, without regard to conflict-of-law principles. Any disputes shall be resolved in the courts of competent jurisdiction in ${GOVERNING_STATE}.
+This Agreement shall be governed by the laws of the State of Florida, without regard to conflict-of-law principles. Any disputes shall be resolved in the courts of competent jurisdiction in Florida.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SECTION 8 — ENTIRE AGREEMENT

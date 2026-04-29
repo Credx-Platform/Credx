@@ -1,0 +1,4 @@
+# Netlify redirects for CredX platform
+/portal   /portal.html   200
+/admin    /admin.html    200
+/adminportal  /admin.html  200

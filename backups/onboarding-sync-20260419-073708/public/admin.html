@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CredX — Advisor Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #101828; --surface: #151d30; --surface2: rgba(21,29,48,.92); --surface3: rgba(255,255,255,.04);
+    --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.13);
+    --cyan: #22d3ee; --blue: #3b82f6; --gold: #f59e0b; --gold2: #d97706;
+    --text: #f1f5f9; --text2: #cbd5e1; --muted: #8899b4;
+    --red: #f87171; --green: #34d399; --amber: #fbbf24; --r: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* Topbar */
+  .topbar { background: rgba(16,24,40,.85); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); height: 64px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 200; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 12px rgba(34,211,238,.25); }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .advisor-badge { background: rgba(245,158,11,.15); color: var(--amber); font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; letter-spacing: .5px; border: 1px solid rgba(245,158,11,.25); }
+  .topbar-name { font-size: 13px; color: var(--text2); }
+  .btn-logout { background: transparent; border: 1px solid var(--border2); color: var(--muted); padding: 6px 14px; border-radius: 6px; font-family: 'Sora', sans-serif; font-size: 12px; cursor: pointer; transition: color .15s, border-color .15s; }
+  .btn-logout:hover { color: var(--cyan); border-color: var(--cyan); }
+
+  /* Layout */
+  .layout { display: flex; flex: 1; }
+  .sidebar { width: 200px; background: rgba(21,29,48,.6); border-right: 1px solid var(--border); min-height: calc(100vh - 64px); padding: 20px 0; flex-shrink: 0; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 11px 18px; color: var(--muted); font-size: 13px; cursor: pointer; border-left: 2px solid transparent; transition: all .15s; user-select: none; }
+  .nav-item:hover { color: var(--text2); background: var(--surface3); }
+  .nav-item.active { color: var(--cyan); border-left-color: var(--cyan); background: rgba(34,211,238,.06); }
+  .nav-count { margin-left: auto; background: linear-gradient(135deg, var(--cyan), var(--blue)); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+  .main { flex: 1; padding: 28px 24px; overflow-x: hidden; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+  /* Stats */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; box-shadow: 0 4px 24px rgba(0,0,0,.2); }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* Card */
+  .card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); box-shadow: 0 4px 24px rgba(0,0,0,.2); margin-bottom: 20px; overflow: hidden; }
+  .card-header { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-header h2 { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; }
+  .card-body { padding: 0; }
+  .card-body-pad { padding: 22px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; padding: 10px 16px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,.2); }
+  td { padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr.clickable:hover td { background: var(--surface3); cursor: pointer; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-new     { background: rgba(59,130,246,.15); color: #60a5fa; border: 1px solid rgba(59,130,246,.2); }
+  .badge-review  { background: rgba(245,158,11,.15); color: var(--amber); border: 1px solid rgba(245,158,11,.2); }
+  .badge-active  { background: rgba(52,211,153,.15); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+  .badge-done    { background: rgba(52,211,153,.15); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+  .badge-danger  { background: rgba(248,113,113,.15); color: var(--red); border: 1px solid rgba(248,113,113,.2); }
+
+  /* Search */
+  .search-bar { display: flex; gap: 12px; margin-bottom: 16px; }
+  .search-bar input, .search-bar select { padding: 10px 14px; background: rgba(255,255,255,.05); border: 1px solid var(--border2); border-radius: 8px; font-family: 'Sora', sans-serif; font-size: 13px; color: var(--text); }
+  .search-bar input { flex: 1; }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-bar input:focus, .search-bar select:focus { outline: none; border-color: var(--cyan); }
+  .search-bar select option { background: #1a2340; }
+
+  /* Detail Panel */
+  .detail-panel { display: none; position: fixed; top: 64px; right: 0; width: 500px; height: calc(100vh - 64px); background: var(--surface); border-left: 1px solid var(--border2); z-index: 150; overflow-y: auto; flex-direction: column; box-shadow: -8px 0 32px rgba(0,0,0,.4); }
+  .detail-panel.open { display: flex; }
+  .detail-header { background: rgba(21,29,48,.95); padding: 20px 22px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); }
+  .detail-header h3 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; }
+  .detail-header p { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .detail-close { position: fixed; top: 76px; right: 508px; background: var(--surface); color: var(--muted); border: 1px solid var(--border2); padding: 8px 12px; cursor: pointer; font-size: 16px; z-index: 151; border-radius: 8px 0 0 8px; transition: color .15s; }
+  .detail-close:hover { color: var(--cyan); border-color: var(--cyan); }
+  .detail-body { padding: 20px; flex: 1; }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 140; backdrop-filter: blur(2px); }
+  .overlay.open { display: block; }
+  .detail-section { margin-bottom: 24px; }
+  .detail-section h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+  .info-label { color: var(--muted); }
+  .info-val { color: var(--text); font-weight: 500; text-align: right; max-width: 60%; }
+  .form-field { margin-bottom: 14px; }
+  .form-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 5px; }
+  .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 9px 12px; background: rgba(255,255,255,.05); border: 1px solid var(--border2); border-radius: 7px; font-family: 'Sora', sans-serif; font-size: 13px; color: var(--text); }
+  .form-field input::placeholder, .form-field textarea::placeholder { color: var(--muted); }
+  .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--cyan); }
+  .form-field select option { background: #1a2340; }
+  .scores-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .score-mini { text-align: center; padding: 12px 8px; background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; }
+  .score-mini input { width: 100%; text-align: center; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; background: transparent; border: none; color: var(--text); padding: 0; }
+  .score-mini input:focus { outline: none; }
+  .score-mini .bureau { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+  .btn { padding: 9px 18px; border-radius: 7px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity .2s, transform .1s; }
+  .btn-cyan   { background: linear-gradient(135deg, var(--cyan), var(--blue)); color: #fff; box-shadow: 0 4px 12px rgba(34,211,238,.2); }
+  .btn-gold   { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #0a0a0a; box-shadow: 0 4px 12px rgba(245,158,11,.2); }
+  .btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--muted); }
+  .btn-outline:hover { border-color: var(--cyan); color: var(--cyan); }
+  .btn-danger { background: transparent; border: 1px solid rgba(248,113,113,.3); color: var(--red); }
+  .btn-danger:hover { background: rgba(248,113,113,.08); }
+  .btn:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .msg-sm { font-size: 12px; padding: 8px 12px; border-radius: 7px; border: 1px solid; margin-top: 10px; display: none; }
+  .msg-sm.success { background: rgba(52,211,153,.1); border-color: rgba(52,211,153,.3); color: var(--green); }
+  .msg-sm.error   { background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); color: var(--red); }
+  .workflow-select { width: 100%; padding: 9px 12px; background: rgba(255,255,255,.05); border: 1px solid var(--border2); border-radius: 7px; font-family: 'Sora', sans-serif; font-size: 13px; color: var(--text); }
+  .workflow-select:focus { outline: none; border-color: var(--cyan); }
+  .workflow-select option { background: #1a2340; }
+  .dispute-mini { padding: 10px 14px; background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+  .dispute-mini .dtitle { font-size: 13px; font-weight: 600; color: var(--text); }
+  .dispute-mini .dmeta  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .empty { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
+  .review-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: border-color .15s; }
+  .review-item:hover { border-color: var(--cyan); }
+  .review-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .review-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .finding-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.25); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--amber); margin: 3px; }
+  .finding-tag button { background: none; border: none; cursor: pointer; color: var(--amber); font-size: 15px; line-height: 1; padding: 0; opacity: .7; }
+  .finding-tag button:hover { opacity: 1; }
+  @media (max-width: 900px) { .stats-row { grid-template-columns: 1fr 1fr; } .detail-panel { width: 100%; } .detail-close { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="logo" href="/">
+    <img src="/assets/credx-logo.jpg" alt="CredX">
+  </a>
+  <div class="topbar-right">
+    <span class="advisor-badge">ADVISOR</span>
+    <span class="topbar-name" id="topbar-name"></span>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-item active" data-page="overview" onclick="showPage('overview')">⬛ Overview</div>
+    <div class="nav-item" data-page="clients" onclick="showPage('clients')">👤 Clients</div>
+    <div class="nav-item" data-page="review" onclick="showPage('review')">
+      ✉ Review Queue <span class="nav-count" id="review-count">0</span>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- Overview -->
+    <div class="page active" id="page-overview">
+      <div class="page-title">Advisor Dashboard</div>
+      <div class="page-sub">Overview of all clients and activity</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="s-leads">—</div><div class="stat-label">Total Leads</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-clients">—</div><div class="stat-label">Portal Clients</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-review">—</div><div class="stat-label">Awaiting Review</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-disputes">—</div><div class="stat-label">Total Disputes</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>Recent Clients</h2></div>
+        <div class="card-body" id="recent-clients"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- Clients -->
+    <div class="page" id="page-clients">
+      <div class="page-title">All Clients</div>
+      <div class="page-sub">Click any client to open their case</div>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search by name or email..." oninput="filterClients()">
+        <select id="filter-status" onchange="filterClients()">
+          <option value="">All Statuses</option>
+          <option value="new">New</option>
+          <option value="in_review">In Review</option>
+          <option value="monitoring_submitted">Active</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <table>
+            <thead><tr><th>Client</th><th>Workflow Stage</th><th>Disputes</th><th>Status</th><th>Payment</th></tr></thead>
+            <tbody id="client-tbody"><tr><td colspan="5" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Queue -->
+    <div class="page" id="page-review">
+      <div class="page-title">Review Queue</div>
+      <div class="page-sub">Clients who completed onboarding and need analysis</div>
+      <div id="review-list"><div class="empty">Loading...</div></div>
+    </div>
+
+  </main>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<button class="detail-close" id="detail-close-btn" onclick="closePanel()">✕</button>
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <h3 id="dp-name">Client</h3>
+    <p id="dp-email"></p>
+  </div>
+  <div class="detail-body" id="dp-body"><div class="empty">Loading...</div></div>
+</div>
+
+<script>
+const token = localStorage.getItem('credx_token');
+const role  = localStorage.getItem('credx_role');
+if (!token) window.location.href = '/login';
+if (role !== 'admin') window.location.href = '/portal';
+
+const WORKFLOW_STAGES = [
+  { id: 'credit_report_received',   label: 'Credit Report Received' },
+  { id: 'advisor_review_pending',   label: 'Advisor Review In Progress' },
+  { id: 'round_one_disputes_ready', label: 'Round 1 Disputes Ready' },
+  { id: 'mail_round_one_packets',   label: 'Round 1 Packets Mailed' },
+  { id: 'wait_for_responses',       label: 'Waiting for Bureau Responses' },
+  { id: 'round_two_follow_up',      label: 'Round 2 Follow-Up' },
+  { id: 'cfpb_escalation',          label: 'CFPB Escalation' },
+  { id: 'goodwill_campaign',        label: 'Goodwill Campaign' },
+  { id: 'completed',                label: 'Case Completed' },
+];
+
+async function api(method, path, body) {
+  const r = await fetch(path, {
+    method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const d = await r.json();
+  if (r.status === 401) { localStorage.clear(); window.location.href = '/login'; }
+  if (!r.ok) throw new Error(d.error || 'Request failed');
+  return d;
+}
+
+function logout() { localStorage.clear(); window.location.href = '/login'; }
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`).classList.add('active');
+}
+
+let allClients = [], currentClientId = null;
+
+async function boot() {
+  try {
+    const { user } = await api('GET', '/api/auth/me');
+    document.getElementById('topbar-name').textContent = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email;
+    await Promise.all([ loadStats(), loadClients(), loadReviewQueue() ]);
+  } catch (err) { console.error(err); }
+}
+
+async function loadStats() {
+  const data = await api('GET', '/api/admin/stats');
+  document.getElementById('s-leads').textContent    = data.totalLeads;
+  document.getElementById('s-clients').textContent  = data.totalClients;
+  document.getElementById('s-review').textContent   = data.awaitingReview;
+  document.getElementById('s-disputes').textContent = data.totalDisputes;
+}
+
+async function loadClients() {
+  const { clients } = await api('GET', '/api/admin/clients');
+  allClients = clients;
+  renderClientTable(clients);
+  renderRecentClients(clients.slice(0, 5));
+}
+
+async function loadReviewQueue() {
+  const { queue } = await api('GET', '/api/admin/review-queue');
+  document.getElementById('review-count').textContent = queue.length;
+  const el = document.getElementById('review-list');
+  if (!queue.length) { el.innerHTML = '<div class="empty">No clients currently awaiting analysis.</div>'; return; }
+  el.innerHTML = queue.map(q => `
+    <div class="review-item" onclick="openClientByEmail('${esc(q.email)}')">
+      <div><div class="review-name">${esc(q.full_name)}</div><div class="review-meta">${esc(q.email)} · ${fmtDate(q.created_at)}</div></div>
+      <span class="badge badge-review">Awaiting Analysis</span>
+    </div>`).join('');
+}
+
+function renderClientTable(clients) {
+  const tbody = document.getElementById('client-tbody');
+  if (!clients.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No clients yet.</td></tr>'; return; }
+  tbody.innerHTML = clients.map(c => {
+    const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email;
+    const stage = WORKFLOW_STAGES.find(s => s.id === c.workflow_stage)?.label || '—';
+    const bCls = { new: 'badge-new', in_review: 'badge-review', monitoring_submitted: 'badge-active', completed: 'badge-done' }[c.lead_status] || 'badge-new';
+    const pmtCls = { active:'badge-done', trialing:'badge-active', past_due:'badge-danger', canceled:'badge-new', none:'badge-new' }[c.payment_status||'none'] || 'badge-new';
+    const pmtLbl = { active:'Active', trialing:'Trial', past_due:'Past Due', canceled:'Canceled', none:'—', pending:'Pending' }[c.payment_status||'none'] || c.payment_status;
+    return `<tr class="clickable" onclick="openClient('${c.id}')">
+      <td><div style="font-weight:600">${esc(name)}</div><div style="font-size:11px;color:var(--muted)">${esc(c.email)}</div></td>
+      <td style="font-size:12px;color:var(--muted)">${esc(stage)}</td>
+      <td style="text-align:center">${c.dispute_count}</td>
+      <td><span class="badge ${bCls}">${cap(c.lead_status||'new')}</span></td>
+      <td><span class="badge ${pmtCls}">${pmtLbl}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderRecentClients(clients) {
+  const el = document.getElementById('recent-clients');
+  if (!clients.length) { el.innerHTML = '<div class="empty">No clients yet.</div>'; return; }
+  el.innerHTML = `<table>
+    <thead><tr><th>Client</th><th>Stage</th><th>Disputes</th><th>Status</th></tr></thead>
+    <tbody>${clients.map(c => {
+      const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email;
+      const stage = WORKFLOW_STAGES.find(s => s.id === c.workflow_stage)?.label || '—';
+      return `<tr class="clickable" onclick="openClient('${c.id}')">
+        <td><div style="font-weight:600">${esc(name)}</div><div style="font-size:11px;color:var(--muted)">${esc(c.email)}</div></td>
+        <td style="font-size:12px;color:var(--muted)">${esc(stage)}</td>
+        <td style="text-align:center">${c.dispute_count}</td>
+        <td><span class="badge badge-${c.lead_status==='in_review'?'review':'new'}">${cap(c.lead_status||'new')}</span></td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+function filterClients() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const s = document.getElementById('filter-status').value;
+  renderClientTable(allClients.filter(c => {
+    const name = [c.first_name, c.last_name, c.email].filter(Boolean).join(' ').toLowerCase();
+    return (!q || name.includes(q)) && (!s || c.lead_status === s);
+  }));
+}
+
+function openClientByEmail(email) { const c = allClients.find(c => c.email === email); if (c) openClient(c.id); }
+
+async function openClient(userId) {
+  currentClientId = userId;
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('dp-body').innerHTML = '<div class="empty">Loading...</div>';
+  try {
+    const data = await api('GET', `/api/admin/clients/${userId}`);
+    renderDetailPanel(data);
+  } catch (err) { document.getElementById('dp-body').innerHTML = `<div class="empty">Error: ${err.message}</div>`; }
+}
+
+function closePanel() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+  currentClientId = null;
+}
+
+let editableFindings = [];
+
+function renderDetailPanel({ user, lead, application, disputes, analysis, documents }) {
+  const name = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email;
+  document.getElementById('dp-name').textContent  = name;
+  document.getElementById('dp-email').textContent = user.email;
+  const scores = analysis?.analysis?.scores || {};
+  const currentStage = analysis?.workflow?.stage || '';
+  editableFindings = [...(analysis?.analysis?.findings || [])];
+
+  document.getElementById('dp-body').innerHTML = `
+    <div class="detail-section">
+      <h4>Client Info</h4>
+      <div class="info-row"><span class="info-label">Name</span><span class="info-val">${esc(name)}</span></div>
+      <div class="info-row"><span class="info-label">Email</span><span class="info-val">${esc(user.email)}</span></div>
+      <div class="info-row"><span class="info-label">Phone</span><span class="info-val">${esc(user.phone||'—')}</span></div>
+      ${application ? `<div class="info-row"><span class="info-label">Address</span><span class="info-val">${esc([application.address_line1,application.city,application.state,application.zip].filter(Boolean).join(', '))}</span></div>` : ''}
+      <div class="info-row"><span class="info-label">Lead Status</span><span class="info-val">${cap(lead?.status||'unknown')}</span></div>
+      <div class="info-row"><span class="info-label">Disputes</span><span class="info-val">${disputes.length}</span></div>
+      <div class="info-row"><span class="info-label">Documents</span><span class="info-val">${documents.length}</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Credit Scores</h4>
+      <div class="scores-mini">
+        <div class="score-mini"><input type="number" id="score-eq" value="${scores.equifax||''}" placeholder="—" min="300" max="850"><div class="bureau">Equifax</div></div>
+        <div class="score-mini"><input type="number" id="score-ex" value="${scores.experian||''}" placeholder="—" min="300" max="850"><div class="bureau">Experian</div></div>
+        <div class="score-mini"><input type="number" id="score-tu" value="${scores.transunion||''}" placeholder="—" min="300" max="850"><div class="bureau">TransUnion</div></div>
+      </div>
+      <div class="form-field"><label>Credit Utilization</label><input type="text" id="a-util" value="${esc(analysis?.analysis?.summary?.utilization||'')}" placeholder="e.g. 87%"></div>
+      <div class="form-field"><label>Derogatory Items Count</label><input type="number" id="a-derog" value="${analysis?.analysis?.summary?.derogatoryCount||''}" placeholder="e.g. 7"></div>
+      <button class="btn btn-gold" onclick="saveAnalysis()">Save Scores &amp; Summary</button>
+      <div class="msg-sm" id="analysis-msg"></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Report Findings</h4>
+      <div id="findings-tags">${renderFindingTags()}</div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <input type="text" id="new-finding" style="flex:1;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:7px;font-family:Sora,sans-serif;font-size:13px;color:var(--text);" placeholder="Add a finding..." onkeydown="if(event.key==='Enter')addFinding()">
+        <button class="btn btn-cyan" onclick="addFinding()">Add</button>
+      </div>
+      <button class="btn btn-outline" style="margin-top:10px;width:100%;" onclick="saveFindings()">Save Findings</button>
+      <div class="msg-sm" id="findings-msg"></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Workflow Stage</h4>
+      <select class="workflow-select" id="wf-stage">
+        <option value="">— Select Stage —</option>
+        ${WORKFLOW_STAGES.map(s => `<option value="${s.id}" ${s.id===currentStage?'selected':''}>${esc(s.label)}</option>`).join('')}
+      </select>
+      <button class="btn btn-cyan" style="margin-top:10px;" onclick="saveWorkflow()">Update Stage</button>
+      <div class="msg-sm" id="wf-msg"></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Dispute Letters (${disputes.length})</h4>
+      ${disputes.length ? disputes.map(d => `
+        <div class="dispute-mini">
+          <div class="dtitle">${esc(d.account_name)} — ${esc(d.bureau)}</div>
+          <div class="dmeta">${cap(d.priority||'medium')} priority · ${cap(d.status||'drafted')}</div>
+        </div>`).join('') : '<div class="empty" style="padding:16px;">No disputes yet.</div>'}
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="seedGallowayCase()">Load Demo Case</button>
+        <button class="btn btn-danger" onclick="clearDisputes()">Clear Disputes</button>
+      </div>
+      <div class="msg-sm" id="disputes-msg"></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Billing &amp; Payment</h4>
+      ${data.payment ? (() => {
+        const p = data.payment;
+        const statusLabels = { active:'Active', trialing:'Trial Active', past_due:'Past Due', canceled:'Canceled', pending:'Pending', paused:'Paused', none:'Not Enrolled' };
+        const cls = { active:'badge-done', trialing:'badge-active', past_due:'badge-danger', canceled:'badge-new', none:'badge-new', pending:'badge-review' }[p.status||'none'] || 'badge-new';
+        const renew = p.current_period_end ? new Date(p.current_period_end).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : null;
+        return `
+          <div class="info-row"><span class="info-label">Status</span><span class="info-val"><span class="badge ${cls}">${statusLabels[p.status||'none']||p.status}</span></span></div>
+          ${p.plan ? `<div class="info-row"><span class="info-label">Plan</span><span class="info-val">${cap(p.plan)}</span></div>` : ''}
+          ${renew ? `<div class="info-row"><span class="info-label">${p.cancel_at_period_end?'Cancels':'Renews'}</span><span class="info-val">${renew}</span></div>` : ''}
+        `;
+      })() : '<div style="font-size:12px;color:var(--muted)">No payment on file — client has not enrolled.</div>'}
+    </div>
+
+    <div class="detail-section">
+      <h4>Portal Access</h4>
+      <div class="info-row"><span class="info-label">Account Created</span><span class="info-val">${fmtDate(user.created_at)}</span></div>
+      <div class="btn-row"><button class="btn btn-cyan" onclick="sendInvite()">Resend Portal Invite</button></div>
+      <div class="msg-sm" id="invite-msg"></div>
+    </div>
+  `;
+}
+
+function renderFindingTags() {
+  if (!editableFindings.length) return '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">No findings added yet.</div>';
+  return editableFindings.map((f, i) =>
+    `<span class="finding-tag">${esc(f)}<button onclick="removeFinding(${i})">×</button></span>`
+  ).join('');
+}
+function addFinding() {
+  const input = document.getElementById('new-finding');
+  const val = input.value.trim(); if (!val) return;
+  editableFindings.push(val); input.value = '';
+  document.getElementById('findings-tags').innerHTML = renderFindingTags();
+}
+function removeFinding(i) { editableFindings.splice(i, 1); document.getElementById('findings-tags').innerHTML = renderFindingTags(); }
+
+async function saveAnalysis() {
+  const msg = document.getElementById('analysis-msg'); msg.style.display = 'none';
+  try {
+    await api('PUT', `/api/admin/clients/${currentClientId}/analysis`, {
+      scores: { equifax: parseInt(document.getElementById('score-eq').value)||null, experian: parseInt(document.getElementById('score-ex').value)||null, transunion: parseInt(document.getElementById('score-tu').value)||null },
+      summary: { utilization: document.getElementById('a-util').value.trim()||null, derogatoryCount: parseInt(document.getElementById('a-derog').value)||null },
+      status: 'reviewed',
+    });
+    msg.className='msg-sm success'; msg.textContent='Scores saved.'; msg.style.display='block';
+    loadClients();
+  } catch(err) { msg.className='msg-sm error'; msg.textContent=err.message; msg.style.display='block'; }
+}
+async function saveFindings() {
+  const msg = document.getElementById('findings-msg'); msg.style.display='none';
+  try {
+    await api('PUT', `/api/admin/clients/${currentClientId}/analysis`, { findings: editableFindings });
+    msg.className='msg-sm success'; msg.textContent='Findings saved.'; msg.style.display='block';
+  } catch(err) { msg.className='msg-sm error'; msg.textContent=err.message; msg.style.display='block'; }
+}
+async function saveWorkflow() {
+  const stage = document.getElementById('wf-stage').value;
+  const msg = document.getElementById('wf-msg'); msg.style.display='none';
+  if (!stage) return;
+  try {
+    await api('PUT', `/api/admin/clients/${currentClientId}/workflow`, { stage });
+    msg.className='msg-sm success'; msg.textContent='Stage updated.'; msg.style.display='block';
+    loadClients();
+  } catch(err) { msg.className='msg-sm error'; msg.textContent=err.message; msg.style.display='block'; }
+}
+async function sendInvite() {
+  const msg = document.getElementById('invite-msg'); msg.style.display='none';
+  try {
+    const { inviteUrl } = await api('POST', `/api/admin/clients/${currentClientId}/invite`);
+    msg.className='msg-sm success'; msg.textContent='Invite sent! URL: '+inviteUrl; msg.style.display='block';
+  } catch(err) { msg.className='msg-sm error'; msg.textContent=err.message; msg.style.display='block'; }
+}
+async function seedGallowayCase() {
+  const msg = document.getElementById('disputes-msg'); msg.style.display='none';
+  try {
+    await api('POST', '/api/disputes/seed-case', { presetId: 'galloway' });
+    msg.className='msg-sm success'; msg.textContent='Demo case loaded.'; msg.style.display='block';
+    setTimeout(() => openClient(currentClientId), 1200);
+  } catch(err) { msg.className='msg-sm error'; msg.textContent=err.message; msg.style.display='block'; }
+}
+async function clearDisputes() {
+  if (!confirm('Clear all disputes for this client?')) return;
+  const msg = document.getElementById('disputes-msg'); msg.style.display='none';
+  try {
+    await api('DELETE', `/api/admin/clients/${currentClientId}/disputes`);
+    msg.className='msg-sm success'; msg.textContent='Disputes cleared.'; msg.style.display='block';
+    setTimeout(() => openClient(currentClientId), 1000);
+  } catch(err) { msg.className='msg-sm error'; msg.textContent=err.message; msg.style.display='block'; }
+}
+function esc(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function cap(s) { return String(s).charAt(0).toUpperCase()+String(s).slice(1).replace(/_/g,' '); }
+function fmtDate(s) { return s ? new Date(s).toLocaleDateString() : '—'; }
+
+boot();
+</script>
+</body>
+</html>
