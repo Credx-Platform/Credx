@@ -15,6 +15,7 @@ const disputesRouter     = require('./routes/disputes');
 const progressRouter     = require('./routes/progress');
 const adminRouter        = require('./routes/admin');
 const paymentsRouter     = require('./routes/payments');
+const mfsnRouter         = require('./routes/myfreescorenow');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -32,7 +33,7 @@ app.use(helmet({
   },
 }));
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || false }));
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*', credentials: true }));
 app.use(express.json({ limit: '50kb' }));
 app.use(express.urlencoded({ extended: false, limit: '50kb' }));
 
@@ -49,6 +50,7 @@ app.use('/api/applications', applicationsRouter);
 app.use('/api/monitoring',   monitoringRouter);
 app.use('/api/admin',        adminRouter);
 app.use('/api/payments',     paymentsRouter);
+app.use('/api/myfreescorenow', mfsnRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
@@ -56,6 +58,7 @@ app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString
 // ── Named HTML routes (before SPA fallback) ───────────────────────────────────
 app.get('/portal',          (req, res) => res.sendFile(path.join(__dirname, 'public', 'portal.html')));
 app.get('/portal/activate', (req, res) => res.sendFile(path.join(__dirname, 'public', 'activate.html')));
+app.get('/masterclass',     (req, res) => res.sendFile(path.join(__dirname, 'public', 'masterclass.html')));
 app.get('/login',           (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/admin',           (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 

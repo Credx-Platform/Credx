@@ -82,6 +82,14 @@ router.post('/login',
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
+      // Check if user needs to activate their account via invite
+      if (user.must_change_password === 1 && user.invite_used === 0) {
+        return res.status(403).json({ 
+          error: 'Account not activated. Please check your email for the activation link or contact support.',
+          code: 'ACCOUNT_NOT_ACTIVATED'
+        });
+      }
+
       const valid = await bcrypt.compare(password, user.password_hash);
       if (!valid) {
         return res.status(401).json({ error: 'Invalid email or password' });

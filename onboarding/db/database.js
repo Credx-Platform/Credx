@@ -197,6 +197,16 @@ if (!_existingUserCols.includes('invite_token')) {
   db.exec(`ALTER TABLE users ADD COLUMN must_change_password INTEGER DEFAULT 1`);
 }
 
+// ── Migration: MyFreeScoreNow integration columns on users (safe re-run) ──────
+// mfsn_api_token is SENSITIVE: encrypted at rest via encrypt()/decrypt().
+const _userColsAfterInvite = db.pragma('table_info(users)').map(c => c.name);
+if (!_userColsAfterInvite.includes('mfsn_member_id')) {
+  db.exec(`ALTER TABLE users ADD COLUMN mfsn_member_id TEXT`);
+  db.exec(`ALTER TABLE users ADD COLUMN mfsn_api_token TEXT`);
+  db.exec(`ALTER TABLE users ADD COLUMN mfsn_connected_at TEXT`);
+  db.exec(`ALTER TABLE users ADD COLUMN mfsn_last_synced_at TEXT`);
+}
+
 const now = () => new Date().toISOString();
 
 // ── Leads ─────────────────────────────────────────────────────────────────────
@@ -341,6 +351,58 @@ function createUser({ id, email, password_hash, first_name, last_name, phone }) 
   return getUserById(id);
 }
 
+// ── MyFreeScoreNow credentials (per-user) ─────────────────────────────────────
+// API token is encrypted at rest. Member ID is plain.
+const _setMfsnCreds = db.prepare(`
+  UPDATE users
+     SET mfsn_member_id = @member_id,
+         mfsn_api_token = @api_token,
+         mfsn_connected_at = @connected_at,
+         updated_at = @ts
+   WHERE id = @id
+`);
+const _clearMfsnCreds = db.prepare(`
+  UPDATE users
+     SET mfsn_member_id = NULL,
+         mfsn_api_token = NULL,
+         mfsn_connected_at = NULL,
+         mfsn_last_synced_at = NULL,
+         updated_at = @ts
+   WHERE id = @id
+`);
+const _setMfsnLastSyncedAt = db.prepare(`UPDATE users SET mfsn_last_synced_at = @ts WHERE id = @id`);
+
+function setMfsnCredentials(user_id, member_id, api_token) {
+  const ts = now();
+  _setMfsnCreds.run({
+    id: user_id,
+    member_id: member_id || null,
+    api_token: api_token ? encrypt(api_token) : null,
+    connected_at: ts,
+    ts,
+  });
+  return ts;
+}
+
+function clearMfsnCredentials(user_id) {
+  _clearMfsnCreds.run({ id: user_id, ts: now() });
+}
+
+function getMfsnCredentials(user_id) {
+  const u = _getUserById.get(user_id);
+  if (!u) return null;
+  return {
+    memberId: u.mfsn_member_id || null,
+    apiToken: u.mfsn_api_token ? decrypt(u.mfsn_api_token) : null,
+    connectedAt: u.mfsn_connected_at || null,
+    lastSyncedAt: u.mfsn_last_synced_at || null,
+  };
+}
+
+function markMfsnSynced(user_id) {
+  _setMfsnLastSyncedAt.run({ id: user_id, ts: now() });
+}
+
 // ── Invite tokens ─────────────────────────────────────────────────────────────
 const _setInviteToken       = db.prepare(`UPDATE users SET invite_token=@token, invite_expires=@expires, invite_used=0, updated_at=@ts WHERE id=@id`);
 const _getUserByInviteToken = db.prepare(`SELECT * FROM users WHERE invite_token = ? AND invite_used = 0 AND invite_expires > ?`);
@@ -424,8 +486,20 @@ function getAllClientsWithStatus() {
     const lead      = _getLeadByEmail.get(u.email);
     const analysis  = _getAnalysisByUser.get(u.id);
     const dispCount = _getDisputeCountByUser.get(u.id)?.cnt || 0;
-    const wf = analysis?.workflow ? JSON.parse(analysis.workflow) : null;
-    const an = analysis?.analysis  ? JSON.parse(analysis.analysis) : null;
+    let wf = null;
+    let an = null;
+    try {
+      wf = analysis?.workflow ? JSON.parse(analysis.workflow) : null;
+    } catch (e) {
+      console.warn('[db] Failed to parse workflow for user', u.id, e.message);
+      wf = null;
+    }
+    try {
+      an = analysis?.analysis ? JSON.parse(analysis.analysis) : null;
+    } catch (e) {
+      console.warn('[db] Failed to parse analysis for user', u.id, e.message);
+      an = null;
+    }
     const { password_hash, invite_token, ...safeUser } = u;
     const pmt = _getPaymentByUser.get(u.id);
     return {
@@ -456,11 +530,28 @@ function saveAnalysis({ id, user_id, analysis, dispute_strategy, workflow }) {
 function getAnalysis(user_id) {
   const row = _getAnalysisByUser.get(user_id);
   if (!row) return null;
-  return {
-    analysis: row.analysis ? JSON.parse(row.analysis) : null,
-    dispute_strategy: row.dispute_strategy ? JSON.parse(row.dispute_strategy) : null,
-    workflow: row.workflow ? JSON.parse(row.workflow) : null,
-  };
+  let analysis = null;
+  let dispute_strategy = null;
+  let workflow = null;
+  try {
+    analysis = row.analysis ? JSON.parse(row.analysis) : null;
+  } catch (e) {
+    console.warn('[db] Failed to parse analysis for user', user_id, e.message);
+    analysis = null;
+  }
+  try {
+    dispute_strategy = row.dispute_strategy ? JSON.parse(row.dispute_strategy) : null;
+  } catch (e) {
+    console.warn('[db] Failed to parse dispute_strategy for user', user_id, e.message);
+    dispute_strategy = null;
+  }
+  try {
+    workflow = row.workflow ? JSON.parse(row.workflow) : null;
+  } catch (e) {
+    console.warn('[db] Failed to parse workflow for user', user_id, e.message);
+    workflow = null;
+  }
+  return { analysis, dispute_strategy, workflow };
 }
 
 // ── Payments ──────────────────────────────────────────────────────────────────
@@ -537,5 +628,7 @@ module.exports = {
   setUserRole, getReviewQueue, getAdminStats, getAllClientsWithStatus,
   // payments
   upsertPayment, getPaymentByUser, getPaymentBySubId, getPaymentByCustId, getPaymentBySession,
+  // myfreescorenow
+  setMfsnCredentials, clearMfsnCredentials, getMfsnCredentials, markMfsnSynced,
   ENCRYPT_ENABLED,
 };

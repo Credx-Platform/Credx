@@ -391,7 +391,9 @@ a{text-decoration:none;color:inherit}
 
 <script>
 /* === CONFIG === */
-const API = 'https://credxapi-production.up.railway.app/api';
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+  ? 'http://localhost:3001/api'
+  : 'https://credxapi-production.up.railway.app/api';
 let TOKEN = localStorage.getItem('credx_token') || null;
 let USER = JSON.parse(localStorage.getItem('credx_user') || 'null');
 let API_ONLINE = null;

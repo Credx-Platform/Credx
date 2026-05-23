@@ -355,6 +355,31 @@ a{text-decoration:none;color:inherit}
         </div>
       </div>
     </div>
+
+    <!-- MyFreeScoreNow integration -->
+    <div class="card" style="margin-top:14px">
+      <div class="card-h">
+        <div class="card-t">MyFreeScoreNow Sync</div>
+        <span id="mfsn-badge" class="badge b-muted">—</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">
+        Connect a client's MyFreeScoreNow account, then pull scores + tradelines straight into their analysis. Per-client API token is stored encrypted at rest.
+      </div>
+      <div class="fg">
+        <label>Client</label>
+        <select id="mfsn-client" onchange="mfsnLoadStatus()"><option value="">Loading clients…</option></select>
+      </div>
+      <div class="fg2">
+        <div class="fg"><label>MFSN Member ID</label><input id="mfsn-member" placeholder="e.g. 12345678"></div>
+        <div class="fg"><label>MFSN API Token</label><input id="mfsn-token" type="password" placeholder="MAPIK#…"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+        <button class="btn btn-t btn-s" onclick="mfsnConnect()">Connect</button>
+        <button class="btn btn-g btn-s" onclick="mfsnSync()">Sync Now</button>
+        <button class="btn btn-g btn-s" onclick="mfsnDisconnect()" style="color:var(--red)">Disconnect</button>
+      </div>
+      <div id="mfsn-out" style="margin-top:10px;font-size:11px;color:var(--muted);white-space:pre-wrap"></div>
+    </div>
   </div>
 </main>
 
@@ -364,7 +389,9 @@ a{text-decoration:none;color:inherit}
 
 <script>
 /* === CONFIG === */
-const API = 'https://credxapi-production.up.railway.app/api';
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+  ? 'http://localhost:3001/api'
+  : 'https://credxapi-production.up.railway.app/api';
 let TOKEN = localStorage.getItem('credx_admin_token') || null;
 let ADMIN = JSON.parse(localStorage.getItem('credx_admin') || 'null');
 
@@ -472,6 +499,98 @@ async function loadStats(){
   }catch(e){console.log('Stats: using demo data');}
 }
 
+/* === MyFreeScoreNow === */
+function mfsnOut(msg){var el=document.getElementById('mfsn-out');if(el)el.textContent=msg||'';}
+function mfsnSetBadge(text,cls){
+  var b=document.getElementById('mfsn-badge'); if(!b)return;
+  b.textContent=text; b.className='badge '+(cls||'b-muted');
+}
+function mfsnSelectedUserId(){var s=document.getElementById('mfsn-client'); return s?s.value:'';}
+
+async function mfsnLoadClients(){
+  if(!TOKEN) return;
+  var sel=document.getElementById('mfsn-client'); if(!sel) return;
+  try{
+    var res=await fetch(API+'/admin/clients',{mode:'cors',headers:headers()});
+    if(!res.ok){sel.innerHTML='<option value="">Could not load clients</option>';return;}
+    var data=await res.json();
+    var clients=(data&&data.clients)||[];
+    sel.innerHTML='<option value="">— Select a client —</option>'+clients.map(function(c){
+      var nm=[c.first_name,c.last_name].filter(Boolean).join(' ')||c.email;
+      return '<option value="'+c.id+'">'+nm+' ('+c.email+')</option>';
+    }).join('');
+  }catch(e){sel.innerHTML='<option value="">Error loading clients</option>';}
+}
+
+async function mfsnLoadStatus(){
+  var uid=mfsnSelectedUserId();
+  if(!uid){mfsnSetBadge('—','b-muted');mfsnOut('');return;}
+  try{
+    var res=await fetch(API+'/myfreescorenow/status/'+uid,{mode:'cors',headers:headers()});
+    var d=await res.json();
+    if(!res.ok){mfsnSetBadge('Error','b-red');mfsnOut(d.error||'Failed to fetch status');return;}
+    if(d.connected){
+      mfsnSetBadge('● Connected','b-green');
+      var memEl=document.getElementById('mfsn-member'); if(memEl) memEl.value=d.memberId||'';
+      var lines=['Member ID: '+(d.memberId||'—'),'Connected: '+(d.connectedAt||'—'),'Last sync: '+(d.lastSyncedAt||'never')];
+      mfsnOut(lines.join('\n'));
+    }else{
+      mfsnSetBadge('Not connected','b-muted');
+      var memEl2=document.getElementById('mfsn-member'); if(memEl2) memEl2.value='';
+      mfsnOut('No MyFreeScoreNow credentials stored for this client.');
+    }
+  }catch(e){mfsnSetBadge('Offline','b-red');mfsnOut('Network error');}
+}
+
+async function mfsnConnect(){
+  var uid=mfsnSelectedUserId();
+  var memEl=document.getElementById('mfsn-member');
+  var tokEl=document.getElementById('mfsn-token');
+  var memberId=memEl?memEl.value.trim():'';
+  var apiToken=tokEl?tokEl.value.trim():'';
+  if(!uid){alert('Pick a client first');return;}
+  if(!memberId||!apiToken){alert('Member ID and API token are required');return;}
+  mfsnOut('Connecting…');
+  try{
+    var res=await fetch(API+'/myfreescorenow/connect',{method:'POST',mode:'cors',headers:headers(),body:JSON.stringify({userId:uid,mfsnMemberId:memberId,mfsnApiToken:apiToken})});
+    var d=await res.json();
+    if(!res.ok){mfsnOut('Connect failed: '+(d.error||res.status));return;}
+    if(tokEl) tokEl.value='';
+    mfsnLoadStatus();
+  }catch(e){mfsnOut('Network error: '+e.message);}
+}
+
+async function mfsnDisconnect(){
+  var uid=mfsnSelectedUserId();
+  if(!uid){alert('Pick a client first');return;}
+  if(!confirm('Disconnect MyFreeScoreNow for this client?'))return;
+  try{
+    var res=await fetch(API+'/myfreescorenow/disconnect/'+uid,{method:'DELETE',mode:'cors',headers:headers()});
+    var d=await res.json();
+    if(!res.ok){mfsnOut('Disconnect failed: '+(d.error||res.status));return;}
+    mfsnLoadStatus();
+  }catch(e){mfsnOut('Network error: '+e.message);}
+}
+
+async function mfsnSync(){
+  var uid=mfsnSelectedUserId();
+  if(!uid){alert('Pick a client first');return;}
+  mfsnOut('Syncing from MyFreeScoreNow…');
+  try{
+    var res=await fetch(API+'/myfreescorenow/sync/'+uid,{method:'POST',mode:'cors',headers:headers()});
+    var d=await res.json();
+    if(!res.ok){mfsnOut('Sync failed: '+(d.error||res.status)+(d.details?'\n'+d.details:''));return;}
+    var s=d.scores||{};
+    var lines=[
+      'Sync complete '+(d.syncedAt||''),
+      'Scores  EQ: '+(s.equifax||'—')+'   EX: '+(s.experian||'—')+'   TU: '+(s.transunion||'—'),
+      'Tradelines: '+(d.tradelinesCount||0)+'   Findings: '+(d.findingsCount||0),
+    ];
+    mfsnOut(lines.join('\n'));
+    mfsnLoadStatus();
+  }catch(e){mfsnOut('Network error: '+e.message);}
+}
+
 /* === INIT === */
 document.addEventListener('DOMContentLoaded',function(){
   if(checkAdminAuth()){
@@ -480,6 +599,7 @@ document.addEventListener('DOMContentLoaded',function(){
       if(nameEl) nameEl.textContent=ADMIN.name;
     }
     loadStats();
+    mfsnLoadClients();
   }
   document.querySelectorAll('.modal-bg').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
 });
