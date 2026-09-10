@@ -17,6 +17,9 @@ const adminRouter        = require('./routes/admin');
 const paymentsRouter     = require('./routes/payments');
 const mfsnRouter         = require('./routes/myfreescorenow');
 
+const tasksRouter        = require('./routes/tasks');
+const actionPlansRouter  = require('./routes/actionPlans');
+
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
@@ -51,6 +54,8 @@ app.use('/api/monitoring',   monitoringRouter);
 app.use('/api/admin',        adminRouter);
 app.use('/api/payments',     paymentsRouter);
 app.use('/api/myfreescorenow', mfsnRouter);
+app.use('/api/tasks',        tasksRouter);
+app.use('/api/action-plans', actionPlansRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString() }));

@@ -169,6 +169,41 @@ db.exec(`
     workflow        TEXT,
     updated_at      TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS action_plans (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    title       TEXT NOT NULL,
+    description TEXT,
+    status      TEXT DEFAULT 'active',
+    priority    TEXT DEFAULT 'medium',
+    due_date    TEXT,
+    completed_at TEXT,
+    created_by  TEXT DEFAULT 'system',
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_action_plans_user ON action_plans(user_id);
+  CREATE INDEX IF NOT EXISTS idx_action_plans_status ON action_plans(status);
+
+  CREATE TABLE IF NOT EXISTS tasks (
+    id          TEXT PRIMARY KEY,
+    user_id     TEXT NOT NULL REFERENCES users(id),
+    title       TEXT NOT NULL,
+    description TEXT,
+    category    TEXT DEFAULT 'Dispute',
+    status      TEXT DEFAULT 'pending',
+    priority    TEXT DEFAULT 'medium',
+    due_date    TEXT,
+    completed_at TEXT,
+    created_by  TEXT DEFAULT 'system',
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id);
+  CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
 `);
 
 db.exec(`
@@ -607,6 +642,96 @@ function upsertPayment(fields) {
   return _getPaymentByUser.get(fields.user_id);
 }
 
+// ── Action Plans ─────────────────────────────────────────────────────────────
+const insertActionPlan = db.prepare(`
+  INSERT INTO action_plans (id, user_id, title, description, status, priority, due_date, created_by, created_at, updated_at)
+  VALUES (@id, @user_id, @title, @description, @status, @priority, @due_date, @created_by, @ts, @ts)
+`);
+const _getActionPlansByUser = db.prepare(`SELECT * FROM action_plans WHERE user_id = ? ORDER BY created_at DESC`);
+const _getAllActionPlans    = db.prepare(`SELECT * FROM action_plans ORDER BY created_at DESC`);
+const _getActionPlanById    = db.prepare(`SELECT * FROM action_plans WHERE id = ?`);
+const _updateActionPlan     = db.prepare(`
+  UPDATE action_plans SET title=@title, description=@description, status=@status, priority=@priority,
+    due_date=@due_date, completed_at=@completed_at, updated_at=@ts WHERE id=@id
+`);
+const _toggleActionPlanStatus = db.prepare(`
+  UPDATE action_plans SET status=@status, completed_at=@completed_at, updated_at=@ts WHERE id=@id
+`);
+const _deleteActionPlan = db.prepare(`DELETE FROM action_plans WHERE id = ?`);
+
+function getActionPlansByUser(uid) { return _getActionPlansByUser.all(uid); }
+function getAllActionPlans()       { return _getAllActionPlans.all(); }
+function getActionPlanById(id)     { return _getActionPlanById.get(id); }
+
+function createActionPlan({ id, user_id, title, description, status, priority, due_date, created_by }) {
+  const ts = now();
+  insertActionPlan.run({ id, user_id, title, description: description || null, status: status || 'active', priority: priority || 'medium', due_date: due_date || null, created_by: created_by || 'system', ts });
+  return _getActionPlanById.get(id);
+}
+
+function updateActionPlan({ id, title, description, status, priority, due_date }) {
+  const ts = now();
+  const completed_at = status === 'completed' ? ts : null;
+  _updateActionPlan.run({ id, title, description: description || null, status: status || 'active', priority: priority || 'medium', due_date: due_date || null, completed_at, ts });
+  return _getActionPlanById.get(id);
+}
+
+function toggleActionPlanStatus(id, newStatus) {
+  const ts = now();
+  const completed_at = newStatus === 'completed' ? ts : null;
+  _toggleActionPlanStatus.run({ id, status: newStatus, completed_at, ts });
+  return _getActionPlanById.get(id);
+}
+
+function deleteActionPlan(id) {
+  return _deleteActionPlan.run(id);
+}
+
+// ── Tasks ────────────────────────────────────────────────────────────────────
+const insertTask = db.prepare(`
+  INSERT INTO tasks (id, user_id, title, description, category, status, priority, due_date, created_by, created_at, updated_at)
+  VALUES (@id, @user_id, @title, @description, @category, @status, @priority, @due_date, @created_by, @ts, @ts)
+`);
+const _getTasksByUser = db.prepare(`SELECT * FROM tasks WHERE user_id = ? ORDER BY created_at DESC`);
+const _getAllTasks    = db.prepare(`SELECT * FROM tasks ORDER BY created_at DESC`);
+const _getTaskById    = db.prepare(`SELECT * FROM tasks WHERE id = ?`);
+const _updateTask     = db.prepare(`
+  UPDATE tasks SET title=@title, description=@description, category=@category, status=@status, priority=@priority,
+    due_date=@due_date, completed_at=@completed_at, updated_at=@ts WHERE id=@id
+`);
+const _toggleTaskStatus = db.prepare(`
+  UPDATE tasks SET status=@status, completed_at=@completed_at, updated_at=@ts WHERE id=@id
+`);
+const _deleteTask = db.prepare(`DELETE FROM tasks WHERE id = ?`);
+
+function getTasksByUser(uid) { return _getTasksByUser.all(uid); }
+function getAllTasks()       { return _getAllTasks.all(); }
+function getTaskById(id)     { return _getTaskById.get(id); }
+
+function createTask({ id, user_id, title, description, category, status, priority, due_date, created_by }) {
+  const ts = now();
+  insertTask.run({ id, user_id, title, description: description || null, category: category || 'Dispute', status: status || 'pending', priority: priority || 'medium', due_date: due_date || null, created_by: created_by || 'system', ts });
+  return _getTaskById.get(id);
+}
+
+function updateTask({ id, title, description, category, status, priority, due_date }) {
+  const ts = now();
+  const completed_at = status === 'completed' ? ts : null;
+  _updateTask.run({ id, title, description: description || null, category: category || 'Dispute', status: status || 'pending', priority: priority || 'medium', due_date: due_date || null, completed_at, ts });
+  return _getTaskById.get(id);
+}
+
+function toggleTaskStatus(id, newStatus) {
+  const ts = now();
+  const completed_at = newStatus === 'completed' ? ts : null;
+  _toggleTaskStatus.run({ id, status: newStatus, completed_at, ts });
+  return _getTaskById.get(id);
+}
+
+function deleteTask(id) {
+  return _deleteTask.run(id);
+}
+
 module.exports = {
   db,
   createLead,       getLead,    getLeadByEmail,
@@ -630,5 +755,9 @@ module.exports = {
   upsertPayment, getPaymentByUser, getPaymentBySubId, getPaymentByCustId, getPaymentBySession,
   // myfreescorenow
   setMfsnCredentials, clearMfsnCredentials, getMfsnCredentials, markMfsnSynced,
+  // action plans
+  createActionPlan, getActionPlansByUser, getAllActionPlans, getActionPlanById, updateActionPlan, toggleActionPlanStatus, deleteActionPlan,
+  // tasks
+  createTask, getTasksByUser, getAllTasks, getTaskById, updateTask, toggleTaskStatus, deleteTask,
   ENCRYPT_ENABLED,
 };

@@ -197,6 +197,7 @@ a{text-decoration:none;color:inherit}
     <div class="sb-item" onclick="showView('scores')"><span class="sb-icon">📈</span>Score Tracker</div>
     <div class="sb-section">Account</div>
     <div class="sb-item" onclick="showView('documents')"><span class="sb-icon">📁</span>Documents</div>
+    <div class="sb-item" onclick="showView('tasks')"><span class="sb-icon">✅</span>My Tasks</div>
     <div class="sb-item" onclick="showView('messages')"><span class="sb-icon">💬</span>Messages<span class="sb-badge">2</span></div>
     <div class="sb-item" onclick="showView('plan')"><span class="sb-icon">💳</span>My Plan</div>
     <div class="sb-item" onclick="showView('education')"><span class="sb-icon">🎓</span>Education</div>
@@ -376,6 +377,16 @@ a{text-decoration:none;color:inherit}
       <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px"><div><div style="font-size:11px;color:var(--cyan);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Active Plan</div><div style="font-family:'Outfit';font-size:22px;font-weight:800">Pro Monthly</div><div style="font-size:13px;color:var(--muted);margin-top:2px">50 deposit paid · 5/month</div></div><div style="text-align:right"><span class="badge b-green" style="margin-bottom:6px">● Active</span><div style="font-size:12px;color:var(--muted)">Next billing: Jul 15</div></div></div>
     </div>
     <div class="card"><div class="card-h"><div class="card-t">Payment History</div></div><table class="dt"><thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead><tbody><tr><td>May 15</td><td>Deposit</td><td>50.00</td><td><span class="badge b-green">Paid</span></td></tr><tr><td>Jun 15</td><td>Monthly</td><td>5.00</td><td><span class="badge b-green">Paid</span></td></tr><tr><td>Jul 15</td><td>Monthly</td><td style="color:var(--muted)">5.00</td><td><span class="badge b-muted">Upcoming</span></td></tr></tbody></table></div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="view" id="v-tasks"><div class="page-header"><div><div class="pg-title">My Tasks</div><div class="pg-sub">Action items from your specialist</div></div></div>
+    <div class="stats"><div class="sc t"><div class="sc-val" id="pt-task-total">0</div><div class="sc-label">Total</div></div><div class="sc g"><div class="sc-val" id="pt-task-pending" style="color:var(--gold)">0</div><div class="sc-label">Pending</div></div><div class="sc y"><div class="sc-val" id="pt-task-completed" style="color:var(--green)">0</div><div class="sc-label">Completed</div></div></div>
+    <div class="card"><div class="card-h"><div class="card-t">Task List</div></div>
+      <div id="pt-task-list" style="display:flex;flex-direction:column;gap:8px">
+        <div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No Tasks</div><div class="empty-sub">Your specialist will add tasks here.</div></div>
+      </div>
+    </div>
   </div>
 
   <!-- EDUCATION -->
@@ -559,6 +570,78 @@ async function sendMessage(){
   }
 }
 
+/* === PORTAL TASKS === */
+let portalTasks = [];
+
+async function loadPortalTasks(){
+  if(!TOKEN) return;
+  try{
+    var res=await fetch(API+'/tasks',{mode:'cors',headers:headers()});
+    if(!res.ok) throw new Error('Failed');
+    var data=await res.json();
+    portalTasks = data.tasks || [];
+    renderPortalTasks();
+  }catch(e){
+    console.log('[portal tasks] load error:', e);
+  }
+}
+
+async function togglePortalTask(id){
+  if(!TOKEN) return;
+  try{
+    var res=await fetch(API+'/tasks/'+id+'/toggle',{method:'PATCH',mode:'cors',headers:headers()});
+    if(!res.ok) throw new Error('Failed');
+    await loadPortalTasks();
+  }catch(e){
+    alert('Could not update task. Please try again.');
+  }
+}
+
+function renderPortalTasks(){
+  var container=document.getElementById('pt-task-list');
+  if(!container) return;
+  var total=portalTasks.length;
+  var pending=portalTasks.filter(function(t){return t.status!=='completed';}).length;
+  var completed=portalTasks.filter(function(t){return t.status==='completed';}).length;
+  var elTotal=document.getElementById('pt-task-total');
+  var elPending=document.getElementById('pt-task-pending');
+  var elCompleted=document.getElementById('pt-task-completed');
+  if(elTotal) elTotal.textContent=total;
+  if(elPending) elPending.textContent=pending;
+  if(elCompleted) elCompleted.textContent=completed;
+
+  if(portalTasks.length===0){
+    container.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No Tasks</div><div class="empty-sub">Your specialist will add tasks here.</div></div>';
+    return;
+  }
+
+  var priorityColors={high:'var(--red)',medium:'var(--gold)',low:'var(--green)'};
+  var categoryIcons={'Dispute':'📨','Client Follow-up':'📞','Billing':'💳','Admin':'⚙️','Other':'📝'};
+
+  container.innerHTML=portalTasks.map(function(t){
+    var isDone=t.status==='completed';
+    var dueText=t.due_date?new Date(t.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+    var isOverdue=t.due_date&&!isDone&&new Date(t.due_date)<new Date();
+    return '<div style="display:flex;align-items:center;gap:10px;padding:12px;background:'+(isDone?'var(--bg2)':'var(--bg)')+';border:1px solid '+(isDone?'var(--border)':'var(--border-c)')+';border-radius:8px">'+
+      '<div style="flex-shrink:0" onclick="togglePortalTask(\''+t.id+'\')">'+
+      '<div style="width:22px;height:22px;border-radius:50%;border:2px solid '+(isDone?'var(--green)':'var(--muted2)')+';display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;background:'+(isDone?'var(--green)':'transparent')+'" onmouseover="this.style.borderColor=\'var(--green)\'" onmouseout="this.style.borderColor=\''+(isDone?'var(--green)':'var(--muted2)')+'\'">'+
+      (isDone?'<span style="color:var(--bg);font-size:12px;font-weight:800">✓</span>':'')+
+      '</div></div>'+
+      '<div style="flex:1;min-width:0">'+
+      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
+      '<span style="font-size:12px;font-weight:600;'+(isDone?'text-decoration:line-through;color:var(--muted)':'color:var(--white)')+'">'+t.title+'</span>'+
+      '<span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;background:'+(priorityColors[t.priority]||'var(--muted2)')+'22;color:'+(priorityColors[t.priority]||'var(--muted)')+';border:1px solid '+(priorityColors[t.priority]||'var(--muted2)')+'44">'+(t.priority||'MED').toUpperCase()+'</span>'+
+      '<span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;background:var(--cyan-dim);color:var(--cyan);border:1px solid var(--border-c)">'+(categoryIcons[t.category]||'📝')+' '+t.category+'</span>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap">'+
+      (dueText?'<span style="font-size:10px;color:'+(isOverdue?'var(--red)':'var(--muted)')+';font-weight:'+(isOverdue?'600':'400')+'">'+(isOverdue?'⚠️ ':'📅 ')+dueText+(isOverdue?' OVERDUE':'')+'</span>':'')+
+      (t.description?'<span style="font-size:10px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">💬 '+t.description+'</span>':'')+
+      '</div>'+
+      '</div>'+
+      '</div>';
+  }).join('');
+}
+
 /* === INIT === */
 document.addEventListener('DOMContentLoaded',async function(){
   if(checkAuth()){
@@ -568,6 +651,7 @@ document.addEventListener('DOMContentLoaded',async function(){
     }
     await checkApiHealth();
     loadDashboard();
+    loadPortalTasks();
   }
 });
 </script>

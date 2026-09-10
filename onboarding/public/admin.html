@@ -134,13 +134,13 @@ a{text-decoration:none;color:inherit}
   <nav class="sb-nav">
     <div class="sb-section">Main</div>
     <div class="sb-item active" onclick="showView('overview')"><span class="sb-icon">📊</span>Overview</div>
-    <div class="sb-item" onclick="showView('checklist')"><span class="sb-icon">✅</span>Task Checklist</div>
-    <div class="sb-item" onclick="showView('documents')"><span class="sb-icon">📄</span>Documents</div>
     <div class="sb-item" onclick="showView('leads')"><span class="sb-icon">🎯</span>New Leads<span class="sb-badge">7</span></div>
     <div class="sb-section">CRM</div>
     <div class="sb-item" onclick="showView('clients')"><span class="sb-icon">👥</span>All Clients</div>
     <div class="sb-item" onclick="showView('pipeline')"><span class="sb-icon">🔄</span>Pipeline</div>
     <div class="sb-section">Operations</div>
+    <div class="sb-item" onclick="showView('tasks')"><span class="sb-icon">✅</span>Task Checklist</div>
+    <div class="sb-item" onclick="showView('reminders')"><span class="sb-icon">🔔</span>Reminders</div>
     <div class="sb-item" onclick="showView('disputes')"><span class="sb-icon">📨</span>Disputes<span class="sb-badge">4</span></div>
     <div class="sb-item" onclick="showView('billing')"><span class="sb-icon">💳</span>Billing</div>
     <div class="sb-item" onclick="showView('affiliates')"><span class="sb-icon">🤝</span>Affiliates</div>
@@ -259,7 +259,7 @@ a{text-decoration:none;color:inherit}
     <!-- RECENT ACTIVITY + REVENUE (kept from original) -->
     <div class="grid-ms">
       <div>
-        <div class="card"><div class="card-h"><div class="card-t">Disputes Requiring Action</div><span class="card-a" onclick="showView('disputes')">View Disputes →</span></div>
+        <div class="card"><div class="card-h"><div class="card-t">Disputes Requiring Action</div><span class="card-a" onclick="showView('disputes')">Manage →</span></div>
           <table class="dt"><thead><tr><th>Client</th><th>Item</th><th>Due</th><th>Status</th></tr></thead><tbody>
             <tr><td class="cl-name">James M.</td><td style="font-size:10px">Capital One</td><td style="font-size:10px;color:var(--gold)">Jul 3</td><td><span class="badge b-gold">Pending</span></td></tr>
             <tr><td class="cl-name">Darnell R.</td><td style="font-size:10px">Medical $1,100</td><td style="font-size:10px;color:var(--green)">Jun 25</td><td><span class="badge b-green">Response In</span></td></tr>
@@ -305,103 +305,6 @@ a{text-decoration:none;color:inherit}
     </tbody></table></div>
   </div>
 
-  <!-- CHECKLIST -->
-  <div class="view" id="v-checklist"><div class="page-header"><div><div class="pg-title">Task Checklist</div><div class="pg-sub">Track what's done and what's pending per client</div></div><button class="btn btn-t" onclick="openModal('m-checklist')">+ Add Task</button></div>
-    <div class="card"><div class="card-h"><div class="card-t">✅ Client Onboarding & Dispute Tasks</div></div>
-      <div id="checklist-container" style="display:flex;flex-direction:column;gap:10px">
-        <!-- Task items rendered here -->
-        <div class="checklist-row" data-task="analysis" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'" onclick="toggleChecklist(this)">
-          <div class="chk-box" style="width:20px;height:20px;border:2px solid var(--green);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--green);flex-shrink:0">✓</div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:12px;text-decoration:line-through;color:var(--muted)">Analysis Complete</div>
-            <div style="font-size:10px;color:var(--muted2);margin-top:2px">Credit report reviewed and negative items identified</div>
-          </div>
-          <span class="badge b-green">Done</span>
-        </div>
-        <div class="checklist-row" data-task="interview" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'" onclick="toggleChecklist(this)">
-          <div class="chk-box" style="width:20px;height:20px;border:2px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--green);flex-shrink:0"></div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:12px">Client Dispute Interview</div>
-            <div style="font-size:10px;color:var(--muted2);margin-top:2px">Schedule and complete dispute strategy interview with client</div>
-          </div>
-          <span class="badge b-gold">Pending</span>
-        </div>
-        <div class="checklist-row" data-task="letters" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'" onclick="toggleChecklist(this)">
-          <div class="chk-box" style="width:20px;height:20px;border:2px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--green);flex-shrink:0"></div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:12px">Generate Round 1 Dispute Letters</div>
-            <div style="font-size:10px;color:var(--muted2);margin-top:2px">Create and send first round dispute letters to all bureaus</div>
-          </div>
-          <span class="badge b-gold">Pending</span>
-        </div>
-        <div class="checklist-row" data-task="documents" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'" onclick="toggleChecklist(this)">
-          <div class="chk-box" style="width:20px;height:20px;border:2px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--green);flex-shrink:0"></div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:12px">Gather Supporting Documents</div>
-            <div style="font-size:10px;color:var(--muted2);margin-top:2px">Collect ID, SSN card, utility bills, and any creditor correspondence</div>
-          </div>
-          <span class="badge b-gold">Pending</span>
-        </div>
-        <div class="checklist-row" data-task="portal" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'" onclick="toggleChecklist(this)">
-          <div class="chk-box" style="width:20px;height:20px;border:2px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--green);flex-shrink:0"></div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:12px">Set Up Client Portal</div>
-            <div style="font-size:10px;color:var(--muted2);margin-top:2px">Send portal invite and confirm client can access their dashboard</div>
-          </div>
-          <span class="badge b-gold">Pending</span>
-        </div>
-        <div class="checklist-row" data-task="mfsn" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'" onclick="toggleChecklist(this)">
-          <div class="chk-box" style="width:20px;height:20px;border:2px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--green);flex-shrink:0"></div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:12px">Connect MyFreeScoreNow</div>
-            <div style="font-size:10px;color:var(--muted2);margin-top:2px">Link credit monitoring for auto-sync of scores and tradelines</div>
-          </div>
-          <span class="badge b-gold">Pending</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- DOCUMENTS -->
-  <div class="view" id="v-documents"><div class="page-header"><div><div class="pg-title">Documents</div><div class="pg-sub">Click any document to view the PDF</div></div></div>
-    <div class="card"><div class="card-h"><div class="card-t">📄 Client Documents</div></div>
-      <div id="documents-container" style="display:flex;flex-direction:column;gap:8px">
-        <div class="doc-row" onclick="openPdf('credit-analysis-james-malloy.pdf')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--cyan)';this.style.background='var(--cyan-dim)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
-          <div style="font-size:20px">📊</div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:12px;color:var(--cyan)">Credit Analysis — James Malloy</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px">Generated Jun 12, 2026 · 4 pages</div>
-          </div>
-          <span class="badge b-cyan">View PDF →</span>
-        </div>
-        <div class="doc-row" onclick="openPdf('dispute-letters-round1-james-malloy.pdf')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--cyan)';this.style.background='var(--cyan-dim)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
-          <div style="font-size:20px">📨</div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:12px;color:var(--cyan)">Round 1 Dispute Letters — James Malloy</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px">Generated Jun 10, 2026 · 12 pages</div>
-          </div>
-          <span class="badge b-cyan">View PDF →</span>
-        </div>
-        <div class="doc-row" onclick="openPdf('credit-analysis-darnell-robinson.pdf')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--cyan)';this.style.background='var(--cyan-dim)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
-          <div style="font-size:20px">📊</div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:12px;color:var(--cyan)">Credit Analysis — Darnell Robinson</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px">Generated Jun 8, 2026 · 3 pages</div>
-          </div>
-          <span class="badge b-cyan">View PDF →</span>
-        </div>
-        <div class="doc-row" onclick="openPdf('client-agreement-yvonne-thompson.pdf')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--cyan)';this.style.background='var(--cyan-dim)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
-          <div style="font-size:20px">📝</div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:12px;color:var(--cyan)">Client Agreement — Yvonne Thompson</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px">Signed Jun 5, 2026 · 8 pages</div>
-          </div>
-          <span class="badge b-cyan">View PDF →</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- PIPELINE -->
   <div class="view" id="v-pipeline"><div class="page-header"><div><div class="pg-title">Client Pipeline</div><div class="pg-sub">End-to-end workflow</div></div></div>
     <div class="pipeline">
@@ -416,9 +319,9 @@ a{text-decoration:none;color:inherit}
   <!-- DISPUTES -->
   <div class="view" id="v-disputes"><div class="page-header"><div><div class="pg-title">Disputes</div><div class="pg-sub">All bureau disputes across clients</div></div><button class="btn btn-t">+ Add Dispute</button></div>
     <div class="card"><table class="dt"><thead><tr><th>Client</th><th>Item</th><th>Amount</th><th>EQ</th><th>EX</th><th>TU</th><th>Rd</th><th>Due</th><th>Status</th></tr></thead><tbody>
-      <tr onclick="openDisputeReport('James M.','Capital One','$1,240','R2','Jul 3','Pending')" style="cursor:pointer"><td>James M.</td><td style="font-size:10px">Capital One</td><td style="color:var(--red);font-size:10px">$1,240</td><td><span class="badge b-gold" style="font-size:8px">Sent</span></td><td><span class="badge b-gold" style="font-size:8px">Sent</span></td><td><span class="badge b-gold" style="font-size:8px">Sent</span></td><td>R2</td><td style="color:var(--gold);font-size:10px">Jul 3</td><td><span class="badge b-gold">Pending</span></td></tr>
-      <tr onclick="openDisputeReport('Yvonne T.','Student Loan','—','R1','Overdue','Follow Up')" style="cursor:pointer"><td>Yvonne T.</td><td style="font-size:10px">Student Loan</td><td style="color:var(--muted);font-size:10px">—</td><td><span class="badge b-muted" style="font-size:8px">—</span></td><td><span class="badge b-red" style="font-size:8px">F/U</span></td><td><span class="badge b-muted" style="font-size:8px">—</span></td><td>R1</td><td style="color:var(--red);font-size:10px">Overdue</td><td><span class="badge b-red">Follow Up</span></td></tr>
-      <tr onclick="openDisputeReport('Darnell R.','Medical RWJ','$1,100','R2','Jun 25','Partial')" style="cursor:pointer"><td>Darnell R.</td><td style="font-size:10px">Medical RWJ</td><td style="color:var(--red);font-size:10px">$1,100</td><td><span class="badge b-green" style="font-size:8px">✓</span></td><td><span class="badge b-muted" style="font-size:8px">—</span></td><td><span class="badge b-green" style="font-size:8px">✓</span></td><td>R2</td><td style="color:var(--green);font-size:10px">Jun 25</td><td><span class="badge b-green">Partial</span></td></tr>
+      <tr><td>James M.</td><td style="font-size:10px">Capital One</td><td style="color:var(--red);font-size:10px">$1,240</td><td><span class="badge b-gold" style="font-size:8px">Sent</span></td><td><span class="badge b-gold" style="font-size:8px">Sent</span></td><td><span class="badge b-gold" style="font-size:8px">Sent</span></td><td>R2</td><td style="color:var(--gold);font-size:10px">Jul 3</td><td><span class="badge b-gold">Pending</span></td></tr>
+      <tr><td>Yvonne T.</td><td style="font-size:10px">Student Loan</td><td style="color:var(--muted);font-size:10px">—</td><td><span class="badge b-muted" style="font-size:8px">—</span></td><td><span class="badge b-red" style="font-size:8px">F/U</span></td><td><span class="badge b-muted" style="font-size:8px">—</span></td><td>R1</td><td style="color:var(--red);font-size:10px">Overdue</td><td><span class="badge b-red">Follow Up</span></td></tr>
+      <tr><td>Darnell R.</td><td style="font-size:10px">Medical RWJ</td><td style="color:var(--red);font-size:10px">$1,100</td><td><span class="badge b-green" style="font-size:8px">✓</span></td><td><span class="badge b-muted" style="font-size:8px">—</span></td><td><span class="badge b-green" style="font-size:8px">✓</span></td><td>R2</td><td style="color:var(--green);font-size:10px">Jun 25</td><td><span class="badge b-green">Partial</span></td></tr>
     </tbody></table></div>
   </div>
 
@@ -480,52 +383,124 @@ a{text-decoration:none;color:inherit}
       <div id="mfsn-out" style="margin-top:10px;font-size:11px;color:var(--muted);white-space:pre-wrap"></div>
     </div>
   </div>
+  <!-- TASK CHECKLIST -->
+  <div class="view" id="v-tasks">
+    <div class="page-header">
+      <div>
+        <div class="pg-title">Task Checklist</div>
+        <div class="pg-sub">Manage your daily tasks and priorities</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-t" onclick="openModal('m-task')">+ Add Task</button>
+        <button class="btn btn-g" onclick="clearCompletedTasks()">Clear Completed</button>
+      </div>
+    </div>
+
+    <!-- Task Stats -->
+    <div class="stats" style="margin-bottom:16px">
+      <div class="sc" style="border-left:3px solid var(--cyan)">
+        <div class="sc-label" style="margin-bottom:8px;font-size:12px">Total Tasks</div>
+        <div class="sc-val" id="task-total">0</div>
+      </div>
+      <div class="sc" style="border-left:3px solid var(--gold)">
+        <div class="sc-label" style="margin-bottom:8px;font-size:12px">Pending</div>
+        <div class="sc-val" id="task-pending" style="color:var(--gold)">0</div>
+      </div>
+      <div class="sc" style="border-left:3px solid var(--green)">
+        <div class="sc-label" style="margin-bottom:8px;font-size:12px">Completed</div>
+        <div class="sc-val" id="task-completed" style="color:var(--green)">0</div>
+      </div>
+      <div class="sc" style="border-left:3px solid var(--red)">
+        <div class="sc-label" style="margin-bottom:8px;font-size:12px">High Priority</div>
+        <div class="sc-val" id="task-high" style="color:var(--red)">0</div>
+      </div>
+    </div>
+
+    <!-- Task Filters -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:600;color:var(--muted)">Filter:</span>
+        <button class="btn btn-s" id="filter-all" style="background:var(--cyan);color:var(--bg)" onclick="filterTasks('all')">All</button>
+        <button class="btn btn-s" id="filter-pending" onclick="filterTasks('pending')">Pending</button>
+        <button class="btn btn-s" id="filter-completed" onclick="filterTasks('completed')">Completed</button>
+        <button class="btn btn-s" id="filter-high" onclick="filterTasks('high')">High Priority</button>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;color:var(--muted)">Sort by:</span>
+          <select id="task-sort" onchange="sortTasks()" style="padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:11px">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="priority">Priority</option>
+            <option value="due">Due Date</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task List -->
+    <div class="card">
+      <div class="card-h"><div class="card-t">Tasks</div></div>
+      <div id="task-list" style="display:flex;flex-direction:column;gap:8px">
+        <!-- Tasks rendered here -->
+      </div>
+      <div id="task-empty" class="empty-state" style="display:none">
+        <div class="empty-icon">✅</div>
+        <div class="empty-title">No Tasks Found</div>
+        <div class="empty-sub">Add your first task to get started.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REMINDERS -->
+  <div class="view" id="v-reminders">
+    <div class="page-header">
+      <div>
+        <div class="pg-title">Reminders</div>
+        <div class="pg-sub">Set and manage important reminders</div>
+      </div>
+      <button class="btn btn-t" onclick="openModal('m-reminder')">+ Add Reminder</button>
+    </div>
+
+    <div class="stats" style="margin-bottom:16px">
+      <div class="sc" style="border-left:3px solid var(--cyan)">
+        <div class="sc-label" style="margin-bottom:8px;font-size:12px">Active</div>
+        <div class="sc-val" id="reminder-active">0</div>
+      </div>
+      <div class="sc" style="border-left:3px solid var(--gold)">
+        <div class="sc-label" style="margin-bottom:8px;font-size:12px">Upcoming</div>
+        <div class="sc-val" id="reminder-upcoming" style="color:var(--gold)">0</div>
+      </div>
+      <div class="sc" style="border-left:3px solid var(--muted2)">
+        <div class="sc-label" style="margin-bottom:8px;font-size:12px">Archived</div>
+        <div class="sc-val" id="reminder-archived" style="color:var(--muted)">0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><div class="card-t">Active Reminders</div></div>
+      <div id="reminder-list" style="display:flex;flex-direction:column;gap:8px">
+        <!-- Reminders rendered here -->
+      </div>
+      <div id="reminder-empty" class="empty-state" style="display:none">
+        <div class="empty-icon">🔔</div>
+        <div class="empty-title">No Reminders</div>
+        <div class="empty-sub">Add a reminder to stay on top of important deadlines.</div>
+      </div>
+    </div>
+  </div>
 </main>
 
 <!-- MODALS -->
 <div class="modal-bg" id="m-new"><div class="modal"><div class="modal-h"><div class="modal-title">Add Client</div><button class="modal-x" onclick="closeModal('m-new')">×</button></div><div class="fg2"><div class="fg"><label>First Name</label><input placeholder="James"></div><div class="fg"><label>Last Name</label><input placeholder="Malloy"></div></div><div class="fg"><label>Email</label><input type="email" placeholder="client@email.com"></div><div class="fg2"><div class="fg"><label>Phone</label><input placeholder="(973) 555-0000"></div><div class="fg"><label>Plan</label><select><option>Pro Monthly</option><option>Pro Full Service</option><option>Family Plan</option></select></div></div><div class="fg"><label>Specialist</label><select><option>James Malloy</option><option>Cesar (pending)</option></select></div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn btn-t" onclick="createClient()">Create + Send Welcome Email</button><button class="btn btn-g" onclick="closeModal('m-new')">Cancel</button></div></div></div>
 <div class="modal-bg" id="m-invite"><div class="modal"><div class="modal-h"><div class="modal-title">Invite Specialist</div><button class="modal-x" onclick="closeModal('m-invite')">×</button></div><div class="fg"><label>Name</label><input placeholder="Cesar"></div><div class="fg"><label>Email</label><input type="email" placeholder="cesar@credxme.com"></div><div class="fg"><label>Role</label><select><option>Specialist</option><option>Admin</option></select></div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn btn-t" onclick="alert('Invite sent!');closeModal('m-invite')">Send Invite</button><button class="btn btn-g" onclick="closeModal('m-invite')">Cancel</button></div></div></div>
 
-<!-- PDF Viewer Modal -->
-<div class="modal-bg" id="m-pdf" style="padding:0;align-items:flex-start;justify-content:center"><div class="modal" style="max-width:900px;width:95%;max-height:95vh;margin-top:20px;padding:0;overflow:hidden"><div class="modal-h" style="padding:16px 20px;border-bottom:1px solid var(--border)"><div class="modal-title" id="pdf-title" style="font-size:14px">Document</div><button class="modal-x" onclick="closeModal('m-pdf')">×</button></div><div style="height:calc(95vh - 60px);background:var(--bg)"><iframe id="pdf-frame" style="width:100%;height:100%;border:none" src=""></iframe></div></div></div>
+<!-- Task Modal -->
+<div class="modal-bg" id="m-task"><div class="modal"><div class="modal-h"><div class="modal-title">Add Task</div><button class="modal-x" onclick="closeModal('m-task')">×</button></div><div class="fg"><label>Client</label><select id="task-client"><option value="">Select a client...</option></select></div><div class="fg"><label>Task Title</label><input id="task-title" placeholder="e.g., Send Round 2 letters for James M."></div><div class="fg2"><div class="fg"><label>Priority</label><select id="task-priority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div><div class="fg"><label>Due Date</label><input id="task-due" type="date"></div></div><div class="fg"><label>Category</label><select id="task-category"><option>Dispute</option><option>Client Follow-up</option><option>Billing</option><option>Admin</option><option>Other</option></select></div><div class="fg"><label>Notes</label><textarea id="task-notes" placeholder="Additional details..."></textarea></div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn btn-t" onclick="addTask()">Add Task</button><button class="btn btn-g" onclick="closeModal('m-task')">Cancel</button></div></div></div>
 
-<!-- Dispute Report Modal -->
-<div class="modal-bg" id="m-dispute-report"><div class="modal" style="max-width:600px"><div class="modal-h"><div class="modal-title">📋 Dispute Report</div><button class="modal-x" onclick="closeModal('m-dispute-report')">×</button></div>
-  <div id="dispute-report-body" style="font-size:12px;line-height:1.6">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-      <div class="fg"><label>Client</label><input id="dr-client" readonly style="background:var(--bg2);color:var(--white)"></div>
-      <div class="fg"><label>Item</label><input id="dr-item" readonly style="background:var(--bg2);color:var(--white)"></div>
-      <div class="fg"><label>Amount</label><input id="dr-amount" readonly style="background:var(--bg2);color:var(--white)"></div>
-      <div class="fg"><label>Round</label><input id="dr-round" readonly style="background:var(--bg2);color:var(--white)"></div>
-      <div class="fg"><label>Due Date</label><input id="dr-due" readonly style="background:var(--bg2);color:var(--white)"></div>
-      <div class="fg"><label>Status</label><input id="dr-status" readonly style="background:var(--bg2);color:var(--white)"></div>
-    </div>
-    <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:12px">
-      <div style="font-weight:700;font-size:11px;color:var(--cyan);margin-bottom:6px">📄 Dispute Letter PDF</div>
-      <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="openPdfFromReport()">
-        <div style="font-size:24px">📨</div>
-        <div style="flex:1"><div style="font-weight:600">View Dispute Letter</div><div style="font-size:10px;color:var(--muted)">Click to open the generated PDF for this dispute</div></div>
-        <span class="badge b-cyan">Open →</span>
-      </div>
-    </div>
-    <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
-      <div style="font-weight:700;font-size:11px;color:var(--cyan);margin-bottom:6px">📝 Notes</div>
-      <textarea id="dr-notes" placeholder="Add notes about this dispute..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:12px;padding:10px;resize:vertical"></textarea>
-      <div style="margin-top:8px;display:flex;gap:8px">
-        <button class="btn btn-t btn-s" onclick="alert('Notes saved')">Save Notes</button>
-        <button class="btn btn-g btn-s" onclick="alert('Marked for follow-up')">Mark F/U</button>
-      </div>
-    </div>
-  </div>
-</div></div>
+<!-- Reminder Modal -->
+<div class="modal-bg" id="m-reminder"><div class="modal"><div class="modal-h"><div class="modal-title">Add Reminder</div><button class="modal-x" onclick="closeModal('m-reminder')">×</button></div><div class="fg"><label>Reminder</label><input id="reminder-title" placeholder="e.g., Follow up with Darnell Robinson"></div><div class="fg2"><div class="fg"><label>Date</label><input id="reminder-date" type="date"></div><div class="fg"><label>Time</label><input id="reminder-time" type="time"></div></div><div class="fg"><label>Priority</label><select id="reminder-priority"><option value="normal">Normal</option><option value="urgent">Urgent</option></select></div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn btn-t" onclick="addReminder()">Add Reminder</button><button class="btn btn-g" onclick="closeModal('m-reminder')">Cancel</button></div></div></div>
 
-<!-- Add Task Modal -->
-<div class="modal-bg" id="m-checklist"><div class="modal"><div class="modal-h"><div class="modal-title">Add Task</div><button class="modal-x" onclick="closeModal('m-checklist')">×</button></div>
-  <div class="fg"><label>Task Name</label><input id="new-task-name" placeholder="e.g. Schedule follow-up call"></div>
-  <div class="fg"><label>Description</label><input id="new-task-desc" placeholder="Brief description of what needs to be done"></div>
-  <div class="fg"><label>Category</label><select id="new-task-cat"><option>Onboarding</option><option>Dispute</option><option>Billing</option><option>Follow-up</option></select></div>
-  <div style="display:flex;gap:8px;margin-top:6px"><button class="btn btn-t" onclick="addChecklistTask()">Add Task</button><button class="btn btn-g" onclick="closeModal('m-checklist')">Cancel</button></div>
-</div></div>
+<!-- Edit Task Modal -->
+<div class="modal-bg" id="m-task-edit"><div class="modal"><div class="modal-h"><div class="modal-title">Edit Task</div><button class="modal-x" onclick="closeModal('m-task-edit')">×</button></div><input type="hidden" id="edit-task-id"><div class="fg"><label>Task Title</label><input id="edit-task-title" placeholder="Task title"></div><div class="fg2"><div class="fg"><label>Priority</label><select id="edit-task-priority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div><div class="fg"><label>Due Date</label><input id="edit-task-due" type="date"></div></div><div class="fg"><label>Category</label><select id="edit-task-category"><option>Dispute</option><option>Client Follow-up</option><option>Billing</option><option>Admin</option><option>Other</option></select></div><div class="fg"><label>Notes</label><textarea id="edit-task-notes" placeholder="Additional details..."></textarea></div><div style="display:flex;gap:8px;margin-top:6px"><button class="btn btn-t" onclick="updateTask()">Save Changes</button><button class="btn btn-g" style="color:var(--red)" onclick="deleteTask()">Delete</button><button class="btn btn-g" onclick="closeModal('m-task-edit')">Cancel</button></div></div></div>
 
 <script>
 /* === CONFIG === */
@@ -597,7 +572,7 @@ function adminLogout(){
 }
 
 /* === VIEWS === */
-var titles={overview:'Overview',checklist:'Task Checklist',documents:'Documents',leads:'New Leads',clients:'All Clients',pipeline:'Pipeline',disputes:'Disputes',billing:'Billing',affiliates:'Affiliates',team:'Team Access',settings:'Settings'};
+var titles={overview:'Overview',leads:'New Leads',clients:'All Clients',pipeline:'Pipeline',disputes:'Disputes',billing:'Billing',affiliates:'Affiliates',team:'Team Access',settings:'Settings',tasks:'Task Checklist',reminders:'Reminders'};
 function showView(id){
   document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
   document.getElementById('v-'+id).classList.add('active');
@@ -731,101 +706,349 @@ async function mfsnSync(){
   }catch(e){mfsnOut('Network error: '+e.message);}
 }
 
-/* === CHECKLIST & DOCUMENTS & DISPUTES === */
-function toggleChecklist(el){
-  var box=el.querySelector('.chk-box');
-  var title=el.querySelector('div[style*="font-weight:600"]');
-  var badge=el.querySelector('.badge');
-  var isDone=box.textContent==='✓';
-  if(isDone){
-    box.textContent=''; box.style.borderColor='var(--border)';
-    title.style.textDecoration='none'; title.style.color='var(--white)';
-    badge.textContent='Pending'; badge.className='badge b-gold';
-  }else{
-    box.textContent='✓'; box.style.borderColor='var(--green)';
-    title.style.textDecoration='line-through'; title.style.color='var(--muted)';
-    badge.textContent='Done'; badge.className='badge b-green';
+/* === TASKS (API-backed) === */
+let allTasks = [];
+let taskClients = [];
+let taskFilter = 'all';
+let taskSort = 'newest';
+
+async function loadTasks() {
+  try {
+    const res = await fetch(API + '/tasks', { headers: headers() });
+    if (!res.ok) throw new Error('Failed to load tasks');
+    const data = await res.json();
+    allTasks = data.tasks || [];
+    renderTasks();
+    updateTaskStats();
+  } catch (e) {
+    console.error('[tasks] load error:', e);
+    document.getElementById('task-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">⚠️ Could not load tasks</div>';
   }
-  saveChecklistState();
 }
 
-function saveChecklistState(){
-  var tasks=[];
-  document.querySelectorAll('.checklist-row').forEach(function(r){
-    var nameEl=r.querySelector('div[style*="font-weight:600"]');
-    var descEl=r.querySelector('div[style*="font-size:10px"]');
-    tasks.push({
-      task:r.getAttribute('data-task'),
-      name:nameEl?nameEl.textContent:'',
-      desc:descEl?descEl.textContent:'',
-      done:r.querySelector('.chk-box').textContent==='✓'
-    });
+async function populateTaskClientDropdown() {
+  const sel = document.getElementById('task-client');
+  if (!sel) return;
+  try {
+    const res = await fetch(API + '/admin/clients', { headers: headers() });
+    if (!res.ok) return;
+    const data = await res.json();
+    const clients = data.clients || [];
+    taskClients = clients;
+    sel.innerHTML = '<option value="">Select a client...</option>' +
+      clients.map(c => `<option value="${c.id}">${(c.first_name||'') + ' ' + (c.last_name||'').trim() || c.email}</option>`).join('');
+  } catch (e) {
+    console.error('[tasks] client dropdown error:', e);
+  }
+}
+
+async function addTask() {
+  const user_id = document.getElementById('task-client').value;
+  const title = document.getElementById('task-title').value.trim();
+  if (!user_id) { alert('Please select a client'); return; }
+  if (!title) { alert('Please enter a task title'); return; }
+
+  const body = {
+    user_id,
+    title,
+    priority: document.getElementById('task-priority').value,
+    due_date: document.getElementById('task-due').value || null,
+    category: document.getElementById('task-category').value,
+    description: document.getElementById('task-notes').value.trim() || null,
+  };
+
+  try {
+    const res = await fetch(API + '/tasks', { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+    if (!res.ok) throw new Error('Failed to create task');
+    closeModal('m-task');
+    clearTaskForm();
+    await loadTasks();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+function clearTaskForm() {
+  document.getElementById('task-client').value = '';
+  document.getElementById('task-title').value = '';
+  document.getElementById('task-priority').value = 'medium';
+  document.getElementById('task-due').value = '';
+  document.getElementById('task-category').value = 'Dispute';
+  document.getElementById('task-notes').value = '';
+}
+
+async function toggleTask(id) {
+  try {
+    const res = await fetch(API + '/tasks/' + id + '/toggle', { method: 'PATCH', headers: headers() });
+    if (!res.ok) throw new Error('Failed to toggle task');
+    await loadTasks();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function deleteTask() {
+  const id = document.getElementById('edit-task-id').value;
+  if (!id) return;
+  if (!confirm('Delete this task?')) return;
+  try {
+    const res = await fetch(API + '/tasks/' + id, { method: 'DELETE', headers: headers() });
+    if (!res.ok) throw new Error('Failed to delete task');
+    closeModal('m-task-edit');
+    await loadTasks();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function clearCompletedTasks() {
+  if (!confirm('Clear all completed tasks?')) return;
+  const completed = allTasks.filter(t => t.status === 'completed');
+  for (const t of completed) {
+    try { await fetch(API + '/tasks/' + t.id, { method: 'DELETE', headers: headers() }); } catch (e) {}
+  }
+  await loadTasks();
+}
+
+function openEditTask(id) {
+  const task = allTasks.find(t => t.id === id);
+  if (!task) return;
+  document.getElementById('edit-task-id').value = task.id;
+  document.getElementById('edit-task-title').value = task.title;
+  document.getElementById('edit-task-priority').value = task.priority;
+  document.getElementById('edit-task-due').value = task.due_date ? task.due_date.split('T')[0] : '';
+  document.getElementById('edit-task-category').value = task.category || 'Dispute';
+  document.getElementById('edit-task-notes').value = task.description || '';
+  openModal('m-task-edit');
+}
+
+async function updateTask() {
+  const id = document.getElementById('edit-task-id').value;
+  const task = allTasks.find(t => t.id === id);
+  if (!task) return;
+
+  const body = {
+    title: document.getElementById('edit-task-title').value.trim(),
+    priority: document.getElementById('edit-task-priority').value,
+    due_date: document.getElementById('edit-task-due').value || null,
+    category: document.getElementById('edit-task-category').value,
+    description: document.getElementById('edit-task-notes').value.trim() || null,
+  };
+
+  try {
+    const res = await fetch(API + '/tasks/' + id, { method: 'PUT', headers: headers(), body: JSON.stringify(body) });
+    if (!res.ok) throw new Error('Failed to update task');
+    closeModal('m-task-edit');
+    await loadTasks();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+function filterTasks(filter) {
+  taskFilter = filter;
+  document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+    btn.style.background = 'var(--bg)';
+    btn.style.color = 'var(--muted)';
   });
-  localStorage.setItem('credx_checklist',JSON.stringify(tasks));
+  const activeBtn = document.getElementById('filter-' + filter);
+  if (activeBtn) { activeBtn.style.background = 'var(--cyan)'; activeBtn.style.color = 'var(--bg)'; }
+  renderTasks();
 }
 
-function loadChecklist(){
-  var saved=localStorage.getItem('credx_checklist');
-  if(!saved) return;
-  try{
-    var tasks=JSON.parse(saved);
-    var container=document.getElementById('checklist-container');
-    if(!container) return;
-    // Clear and rebuild from saved state so dynamically added tasks survive reloads
-    container.innerHTML='';
-    tasks.forEach(function(t){
-      var id=t.task||'task_'+Date.now()+Math.random();
-      var html='<div class="checklist-row" data-task="'+id+'" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor=\'var(--cyan)\'" onmouseout="this.style.borderColor=\'var(--border)\'" onclick="toggleChecklist(this)">'+
-        '<div class="chk-box" style="width:20px;height:20px;border:2px solid '+(t.done?'var(--green)':'var(--border)')+';border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--green);flex-shrink:0">'+(t.done?'✓':'')+'</div>'+
-        '<div style="flex:1"><div style="font-weight:600;font-size:12px;'+(t.done?'text-decoration:line-through;color:var(--muted)':'')+'">'+t.name+'</div>'+(t.desc?'<div style="font-size:10px;color:var(--muted2);margin-top:2px">'+t.desc+'</div>':'')+'</div>'+
-        '<span class="badge '+(t.done?'b-green':'b-gold')+'">'+(t.done?'Done':'Pending')+'</span></div>';
-      container.insertAdjacentHTML('beforeend',html);
+function sortTasks() {
+  taskSort = document.getElementById('task-sort').value;
+  renderTasks();
+}
+
+function renderTasks() {
+  let tasks = [...allTasks];
+  const container = document.getElementById('task-list');
+  const empty = document.getElementById('task-empty');
+  if (!container) return;
+
+  if (taskFilter === 'pending') tasks = tasks.filter(t => t.status !== 'completed');
+  else if (taskFilter === 'completed') tasks = tasks.filter(t => t.status === 'completed');
+  else if (taskFilter === 'high') tasks = tasks.filter(t => t.priority === 'high');
+
+  if (taskSort === 'newest') tasks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  else if (taskSort === 'oldest') tasks.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  else if (taskSort === 'priority') {
+    const order = { high: 0, medium: 1, low: 2 };
+    tasks.sort((a, b) => (order[a.priority] || 1) - (order[b.priority] || 1));
+  }
+  else if (taskSort === 'due') {
+    tasks.sort((a, b) => {
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return new Date(a.due_date) - new Date(b.due_date);
     });
-  }catch(e){ console.error('loadChecklist error',e); }
+  }
+
+  if (tasks.length === 0) {
+    container.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  // Group by client
+  const byClient = {};
+  tasks.forEach(t => {
+    const key = t.client_name || 'Unknown';
+    const uid = t.user_id;
+    if (!byClient[uid]) byClient[uid] = { name: key, email: t.client_email || '', tasks: [] };
+    byClient[uid].tasks.push(t);
+  });
+
+  const priorityColors = { high: 'var(--red)', medium: 'var(--gold)', low: 'var(--green)' };
+  const priorityLabels = { high: 'HIGH', medium: 'MED', low: 'LOW' };
+  const categoryIcons = { 'Dispute': '📨', 'Client Follow-up': '📞', 'Billing': '💳', 'Admin': '⚙️', 'Other': '📝' };
+
+  container.innerHTML = Object.values(byClient).map(group => {
+    const clientTasks = group.tasks.map(t => {
+      const isDone = t.status === 'completed';
+      const dueText = t.due_date ? new Date(t.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      const isOverdue = t.due_date && !isDone && new Date(t.due_date) < new Date();
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${isDone ? 'rgba(255,255,255,.02)' : 'var(--bg)'};border-radius:6px;border:1px solid ${isDone ? 'var(--border)' : 'rgba(255,255,255,.04)'};margin-bottom:6px">` +
+        `<div style="flex-shrink:0" onclick="event.stopPropagation();toggleTask('${t.id}')">` +
+        `<div style="width:20px;height:20px;border-radius:50%;border:2px solid ${isDone ? 'var(--green)' : 'var(--muted2)'};display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;background:${isDone ? 'var(--green)' : 'transparent'}" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='${isDone ? 'var(--green)' : 'var(--muted2)'}'">` +
+        (isDone ? `<span style="color:var(--bg);font-size:10px;font-weight:800">✓</span>` : '') +
+        `</div></div>` +
+        `<div style="flex:1;min-width:0;cursor:pointer" onclick="openEditTask('${t.id}')">` +
+        `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">` +
+        `<span style="font-size:12px;font-weight:600;${isDone ? 'text-decoration:line-through;color:var(--muted)' : 'color:var(--white)'}" onmouseenter="this.style.color='var(--cyan)'" onmouseleave="this.style.color='${isDone ? 'var(--muted)' : 'var(--white)'}'">${t.title}</span>` +
+        `<span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;background:${priorityColors[t.priority] || 'var(--muted2)'}22;color:${priorityColors[t.priority] || 'var(--muted)'};border:1px solid ${priorityColors[t.priority] || 'var(--muted2)'}44">${priorityLabels[t.priority] || t.priority.toUpperCase()}</span>` +
+        `<span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;background:var(--cyan-dim);color:var(--cyan);border:1px solid var(--border-c)">${categoryIcons[t.category] || '📝'} ${t.category}</span>` +
+        `</div>` +
+        `<div style="display:flex;align-items:center;gap:10px;margin-top:3px;flex-wrap:wrap">` +
+        (dueText ? `<span style="font-size:10px;color:${isOverdue ? 'var(--red)' : 'var(--muted)'};font-weight:${isOverdue ? '600' : '400'}">${isOverdue ? '⚠️ ' : '📅 '}${dueText}${isOverdue ? ' OVERDUE' : ''}</span>` : '') +
+        (t.description ? `<span style="font-size:10px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px">💬 ${t.description}</span>` : '') +
+        `</div>` +
+        `</div>` +
+        `</div>`;
+    }).join('');
+
+    const initials = group.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px">` +
+      `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">` +
+      `<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),#0055cc);display:flex;align-items:center;justify-content:center;font-family:'Outfit';font-weight:800;font-size:11px;color:var(--white);flex-shrink:0">${initials}</div>` +
+      `<div><div style="font-size:13px;font-weight:700;color:var(--white)">${group.name}</div><div style="font-size:10px;color:var(--muted)">${group.email}</div></div>` +
+      `<div style="margin-left:auto;display:flex;gap:4px">` +
+      `<span style="font-size:10px;padding:2px 8px;border-radius:100px;background:var(--cyan-dim);color:var(--cyan);font-weight:600">${group.tasks.length} task${group.tasks.length!==1?'s':''}</span>` +
+      `</div>` +
+      `</div>` +
+      `<div>${clientTasks}</div>` +
+      `</div>`;
+  }).join('');
 }
 
-function addChecklistTask(){
-  var name=document.getElementById('new-task-name').value.trim();
-  var desc=document.getElementById('new-task-desc').value.trim();
-  var cat=document.getElementById('new-task-cat').value;
-  if(!name){alert('Enter a task name');return;}
-  var id='task_'+Date.now();
-  var html='<div class="checklist-row" data-task="'+id+'" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .2s" onmouseover="this.style.borderColor=\'var(--cyan)\'" onmouseout="this.style.borderColor=\'var(--border)\'" onclick="toggleChecklist(this)">'+
-    '<div class="chk-box" style="width:20px;height:20px;border:2px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--green);flex-shrink:0"></div>'+
-    '<div style="flex:1"><div style="font-weight:600;font-size:12px">'+name+'</div><div style="font-size:10px;color:var(--muted2);margin-top:2px">'+(desc||cat)+'</div></div>'+
-    '<span class="badge b-gold">Pending</span></div>';
-  var container=document.getElementById('checklist-container');
-  container.insertAdjacentHTML('beforeend',html);
-  document.getElementById('new-task-name').value='';
-  document.getElementById('new-task-desc').value='';
-  closeModal('m-checklist');
-  saveChecklistState();
+function updateTaskStats() {
+  const total = allTasks.length;
+  const pending = allTasks.filter(t => t.status !== 'completed').length;
+  const completed = allTasks.filter(t => t.status === 'completed').length;
+  const high = allTasks.filter(t => t.priority === 'high' && t.status !== 'completed').length;
+  const elTotal = document.getElementById('task-total');
+  const elPending = document.getElementById('task-pending');
+  const elCompleted = document.getElementById('task-completed');
+  const elHigh = document.getElementById('task-high');
+  if (elTotal) elTotal.textContent = total;
+  if (elPending) elPending.textContent = pending;
+  if (elCompleted) elCompleted.textContent = completed;
+  if (elHigh) elHigh.textContent = high;
 }
 
-var currentPdfFile='';
-function openPdf(filename){
-  currentPdfFile=filename;
-  document.getElementById('pdf-title').textContent='📄 '+filename;
-  // Use Google Docs viewer or direct link
-  var viewerUrl='https://docs.google.com/gview?embedded=1&url='+encodeURIComponent(window.location.origin+'/documents/'+filename);
-  document.getElementById('pdf-frame').src=viewerUrl;
-  openModal('m-pdf');
+/* === REMINDERS === */
+function addReminder() {
+  const title = document.getElementById('reminder-title').value.trim();
+  if (!title) { alert('Please enter a reminder'); return; }
+  const reminders = getReminders();
+  const reminder = {
+    id: 'r_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+    title: title,
+    date: document.getElementById('reminder-date').value,
+    time: document.getElementById('reminder-time').value,
+    priority: document.getElementById('reminder-priority').value,
+    createdAt: new Date().toISOString(),
+    archived: false
+  };
+  reminders.push(reminder);
+  saveReminders(reminders);
+  closeModal('m-reminder');
+  clearReminderForm();
+  renderReminders();
+  updateReminderStats();
 }
 
-var drCurrentPdf='';
-function openDisputeReport(client,item,amount,round,due,status){
-  document.getElementById('dr-client').value=client;
-  document.getElementById('dr-item').value=item;
-  document.getElementById('dr-amount').value=amount;
-  document.getElementById('dr-round').value=round;
-  document.getElementById('dr-due').value=due;
-  document.getElementById('dr-status').value=status;
-  drCurrentPdf='dispute-letter-'+client.toLowerCase().replace(/[^a-z]/g,'')+'-'+item.toLowerCase().replace(/[^a-z]/g,'')+'.pdf';
-  openModal('m-dispute-report');
+function clearReminderForm() {
+  document.getElementById('reminder-title').value = '';
+  document.getElementById('reminder-date').value = '';
+  document.getElementById('reminder-time').value = '';
+  document.getElementById('reminder-priority').value = 'normal';
 }
-function openPdfFromReport(){
-  if(drCurrentPdf) openPdf(drCurrentPdf);
-  else alert('No PDF available for this dispute yet.');
+
+function deleteReminder(id) {
+  let reminders = getReminders().filter(r => r.id !== id);
+  saveReminders(reminders);
+  renderReminders();
+  updateReminderStats();
+}
+
+function archiveReminder(id) {
+  const reminders = getReminders();
+  const r = reminders.find(x => x.id === id);
+  if (r) { r.archived = true; }
+  saveReminders(reminders);
+  renderReminders();
+  updateReminderStats();
+}
+
+function renderReminders() {
+  let reminders = getReminders().filter(r => !r.archived);
+  const container = document.getElementById('reminder-list');
+  const empty = document.getElementById('reminder-empty');
+  if (!container) return;
+
+  reminders.sort((a, b) => {
+    const da = a.date ? new Date(a.date + 'T' + (a.time || '00:00')) : new Date(a.createdAt);
+    const db = b.date ? new Date(b.date + 'T' + (b.time || '00:00')) : new Date(b.createdAt);
+    return da - db;
+  });
+
+  if (reminders.length === 0) {
+    container.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  const today = new Date().toISOString().split('T')[0];
+  container.innerHTML = reminders.map(r => {
+    const isUrgent = r.priority === 'urgent' || (r.date && r.date <= today);
+    const dateText = r.date ? new Date(r.date + 'T' + (r.time || '00:00')).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + (r.time ? ' at ' + r.time : '') : 'No date set';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg2);border:1px solid ${isUrgent ? 'var(--red)' : 'var(--border)'};border-radius:8px">` +
+      `<div style="font-size:20px;flex-shrink:0">${isUrgent ? '🔴' : '🔔'}</div>` +
+      `<div style="flex:1;min-width:0">` +
+      `<div style="font-size:12px;font-weight:600;color:${isUrgent ? 'var(--red)' : 'var(--white)'};margin-bottom:2px">${r.title}</div>` +
+      `<div style="font-size:10px;color:var(--muted)">📅 ${dateText}</div>` +
+      `</div>` +
+      `<div style="display:flex;gap:6px;flex-shrink:0">` +
+      `<button class="btn btn-s" onclick="archiveReminder('${r.id}')" style="font-size:10px;padding:4px 8px" title="Done">✅</button>` +
+      `<button class="btn btn-s" onclick="deleteReminder('${r.id}')" style="font-size:10px;padding:4px 8px;color:var(--red)" title="Delete">🗑️</button>` +
+      `</div>` +
+      `</div>`;
+  }).join('');
+}
+
+function updateReminderStats() {
+  const reminders = getReminders();
+  const active = reminders.filter(r => !r.archived).length;
+  const archived = reminders.filter(r => r.archived).length;
+  const today = new Date().toISOString().split('T')[0];
+  const upcoming = reminders.filter(r => !r.archived && r.date && r.date > today).length;
+  document.getElementById('reminder-active').textContent = active;
+  document.getElementById('reminder-upcoming').textContent = upcoming;
+  document.getElementById('reminder-archived').textContent = archived;
 }
 
 /* === INIT === */
@@ -837,9 +1060,18 @@ document.addEventListener('DOMContentLoaded',function(){
     }
     loadStats();
     mfsnLoadClients();
-    loadChecklist();
+    loadTasks();
+    renderReminders();
+    updateReminderStats();
   }
   document.querySelectorAll('.modal-bg').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+  // Populate client dropdown when task modal opens
+  var origOpenModal = window.openModal;
+  window.openModal = function(id) {
+    if (id === 'm-task') populateTaskClientDropdown();
+    var el = document.getElementById(id);
+    if (el) el.classList.add('open');
+  };
 });
 </script>
 </body>
